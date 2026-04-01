@@ -6,6 +6,7 @@ const { open } = require("sqlite");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data.db");
+const MIGRATION_TOKEN = process.env.MIGRATION_TOKEN || "";
 
 const TEST_WORDS = [
   { en: "archipelago", ru: "архипелаг" },
@@ -158,6 +159,54 @@ app.delete("/api/words/:id", async (req, res) => {
   const { id } = req.params;
   await db.run("DELETE FROM words WHERE id = ?", [id]);
   res.json({ ok: true });
+});
+
+app.post("/api/admin/import-words", async (req, res) => {
+  const token = req.get("x-migration-token") || "";
+  if (!MIGRATION_TOKEN || token !== MIGRATION_TOKEN) {
+    return res.status(403).json({ error: "Invalid migration token." });
+  }
+
+  const { words, replace } = req.body || {};
+  if (!Array.isArray(words) || words.length === 0) {
+    return res.status(400).json({ error: "words must be a non-empty array." });
+  }
+
+  await db.exec("BEGIN");
+  try {
+    if (replace) {
+      await db.run("DELETE FROM words");
+      await db.run("DELETE FROM sqlite_sequence WHERE name = 'words'");
+    }
+
+    const stmt = await db.prepare(
+      "INSERT INTO words (en, ru, definition, example, fact, level, next_review, streak, archived) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+
+    let imported = 0;
+    for (const item of words) {
+      if (!item || !item.en || !item.ru) continue;
+      await stmt.run(
+        String(item.en).trim(),
+        String(item.ru).trim(),
+        item.definition ? String(item.definition).trim() : null,
+        item.example ? String(item.example).trim() : null,
+        item.fact ? String(item.fact).trim() : null,
+        Number.isInteger(item.level) ? item.level : 1,
+        Number.isInteger(item.next_review) ? item.next_review : Date.now(),
+        Number.isInteger(item.streak) ? item.streak : 0,
+        Number(item.archived) ? 1 : 0
+      );
+      imported += 1;
+    }
+
+    await stmt.finalize();
+    await db.exec("COMMIT");
+    res.json({ ok: true, imported });
+  } catch (error) {
+    await db.exec("ROLLBACK");
+    res.status(500).json({ error: "Failed to import words.", details: error.message });
+  }
 });
 
 
