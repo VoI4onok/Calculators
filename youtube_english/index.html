@@ -56,7 +56,9 @@
     }
 
     body.focus-mode .bulk,
-    body.focus-mode .footer {
+    body.focus-mode .footer,
+    body.focus-mode .toolbar .secondary-controls,
+    body.focus-mode .panel-footer {
       display: none;
     }
 
@@ -129,6 +131,12 @@
       gap: 8px;
     }
 
+    .toolbar .secondary-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     .toolbar select,
     .toolbar button {
       padding: 8px 12px;
@@ -141,6 +149,18 @@
       font-family: "JetBrains Mono", monospace;
     }
 
+    .mode-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-btn.is-active {
+      background: rgba(29, 211, 176, 0.16);
+      color: var(--accent-2);
+      border: 1px solid rgba(29, 211, 176, 0.45);
+    }
+
     .word {
       font-size: clamp(32px, 5vw, 48px);
       font-weight: 700;
@@ -151,14 +171,6 @@
     .streak {
       font-weight: 700;
       color: #ffb36b;
-    }
-
-    .direction {
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(255, 107, 53, 0.12);
-      color: #ff8a5b;
-      border: 1px solid rgba(255, 107, 53, 0.35);
     }
 
     .input-row {
@@ -451,34 +463,26 @@
           <input type="checkbox" id="autoNextToggle" />
           Auto next
         </label>
+        <div class="mode-buttons">
+          <button type="button" class="mode-btn is-active" id="ruEnBtn">RU → EN</button>
+          <button type="button" class="mode-btn" id="enRuBtn">EN → RU</button>
+        </div>
         <label>
-          Mode
-          <select id="modeSelect">
-            <option value="mixed" selected>70/30 Mix</option>
-            <option value="ru-en">RU → EN</option>
-            <option value="en-ru">EN → RU</option>
+          Study mode
+          <select id="studyModeSelect">
+            <option value="normal" selected>Spaced repetition</option>
+            <option value="practice">Practice weighted</option>
+            <option value="practice-hard">Practice hard only</option>
+            <option value="practice-zero">Practice zero</option>
           </select>
         </label>
-        <label>
-          <input type="checkbox" id="practiceToggle" />
-          Practice mode
-        </label>
-        <label>
-          <input type="checkbox" id="practiceZeroToggle" />
-          Practice zero
-        </label>
-        <label>
-          <input type="checkbox" id="practiceHardToggle" />
-          Only hard (Lv 1–2)
-        </label>
-        <div>
+        <div class="secondary-controls">
           <button id="themeToggle">Toggle theme</button>
           <button id="focusToggle">Focus mode</button>
         </div>
       </div>
       <div class="meta">
         <div>Level: <span id="level">1</span></div>
-        <div class="direction" id="direction">RU → EN</div>
       </div>
       <div class="word" id="prompt">—</div>
       <div style="text-align:center;">
@@ -552,7 +556,7 @@
           </table>
         </div>
       </div>
-      <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <div class="panel-footer" style="display:flex; gap:10px; justify-content:flex-end;">
         <button class="reveal" id="mainListBtn">Full list</button>
         <button class="reveal" id="editBtn">Edit entry</button>
         <button class="reveal" id="deleteBtn">Delete entry</button>
@@ -586,7 +590,6 @@
     };
 
     const levelEl = document.getElementById("level");
-    const directionEl = document.getElementById("direction");
     const promptEl = document.getElementById("prompt");
     const answerEl = document.getElementById("answer");
     const answerResult = document.getElementById("answerResult");
@@ -598,10 +601,9 @@
     const editBtn = document.getElementById("editBtn");
     const autoNextToggle = document.getElementById("autoNextToggle");
     const themeToggle = document.getElementById("themeToggle");
-    const modeSelect = document.getElementById("modeSelect");
-    const practiceToggle = document.getElementById("practiceToggle");
-    const practiceZeroToggle = document.getElementById("practiceZeroToggle");
-    const practiceHardToggle = document.getElementById("practiceHardToggle");
+    const ruEnBtn = document.getElementById("ruEnBtn");
+    const enRuBtn = document.getElementById("enRuBtn");
+    const studyModeSelect = document.getElementById("studyModeSelect");
     const focusToggle = document.getElementById("focusToggle");
     const mainPanel = document.getElementById("mainPanel");
     const detailDefinition = document.getElementById("detailDefinition");
@@ -632,7 +634,7 @@
     let isLocked = false;
     let pendingNext = false;
     let autoNext = false;
-    let mode = "mixed";
+    let mode = "ru-en";
     let practiceMode = false;
     let practiceZeroMode = false;
     let practiceOnlyHard = false;
@@ -642,6 +644,23 @@
     let sessionShown = 0;
     let recentPracticeIds = [];
 
+    function syncModeButtons() {
+      ruEnBtn.classList.toggle("is-active", mode === "ru-en");
+      enRuBtn.classList.toggle("is-active", mode === "en-ru");
+    }
+
+    function syncStudyModeSelect() {
+      if (practiceZeroMode) {
+        studyModeSelect.value = "practice-zero";
+      } else if (practiceMode && practiceOnlyHard) {
+        studyModeSelect.value = "practice-hard";
+      } else if (practiceMode) {
+        studyModeSelect.value = "practice";
+      } else {
+        studyModeSelect.value = "normal";
+      }
+    }
+
     function calculateNextReview(level, isWrong = false) {
       if (isWrong) return Date.now() + 5 * 60 * 1000;
       const interval = levelIntervals[level] || levelIntervals[1];
@@ -649,9 +668,7 @@
     }
 
     function chooseDirection() {
-      if (mode === "ru-en") return "RU_TO_EN";
-      if (mode === "en-ru") return "EN_TO_RU";
-      return Math.random() < 0.7 ? "RU_TO_EN" : "EN_TO_RU";
+      return mode === "en-ru" ? "EN_TO_RU" : "RU_TO_EN";
     }
 
     function getDueWords() {
@@ -719,7 +736,6 @@
       if (!state.current) {
         promptEl.textContent = "No due words";
         levelEl.textContent = "—";
-        directionEl.textContent = "—";
         answerEl.value = "";
         answerEl.classList.remove("input-correct", "input-wrong");
         answerEl.style.display = "block";
@@ -735,7 +751,6 @@
         return;
       }
       levelEl.textContent = state.current.level;
-      directionEl.textContent = state.direction === "RU_TO_EN" ? "RU → EN" : "EN → RU";
       promptEl.textContent = state.direction === "RU_TO_EN" ? state.current.ru : state.current.en;
       detailDefinition.textContent = state.current.definition || "—";
       detailFact.textContent = state.current.fact || "—";
@@ -1138,36 +1153,20 @@
     focusToggle.addEventListener("click", () => {
       document.body.classList.toggle("focus-mode");
     });
-    practiceToggle.addEventListener("change", () => {
-      practiceMode = practiceToggle.checked;
-      if (practiceMode) {
-        practiceZeroMode = false;
-        practiceZeroToggle.checked = false;
-        localStorage.setItem("practiceZeroMode", "false");
-      }
+    function updateStudyMode(value) {
+      practiceMode = value === "practice" || value === "practice-hard";
+      practiceZeroMode = value === "practice-zero";
+      practiceOnlyHard = value === "practice-hard";
       localStorage.setItem("practiceMode", String(practiceMode));
-      sessionShown = 0;
-      recentPracticeIds = [];
-      pickNextWord();
-    });
-    practiceZeroToggle.addEventListener("change", () => {
-      practiceZeroMode = practiceZeroToggle.checked;
-      if (practiceZeroMode) {
-        practiceMode = false;
-        practiceToggle.checked = false;
-        localStorage.setItem("practiceMode", "false");
-      }
       localStorage.setItem("practiceZeroMode", String(practiceZeroMode));
-      sessionShown = 0;
-      recentPracticeIds = [];
-      pickNextWord();
-    });
-    practiceHardToggle.addEventListener("change", () => {
-      practiceOnlyHard = practiceHardToggle.checked;
       localStorage.setItem("practiceOnlyHard", String(practiceOnlyHard));
+      syncStudyModeSelect();
       sessionShown = 0;
       recentPracticeIds = [];
       pickNextWord();
+    }
+    studyModeSelect.addEventListener("change", () => {
+      updateStudyMode(studyModeSelect.value);
     });
     autoNextToggle.addEventListener("change", () => {
       autoNext = autoNextToggle.checked;
@@ -1179,9 +1178,16 @@
       const current = document.body.classList.contains("theme-light") ? "light" : "dark";
       applyTheme(current === "light" ? "dark" : "light");
     });
-    modeSelect.addEventListener("change", () => {
-      mode = modeSelect.value;
+    ruEnBtn.addEventListener("click", () => {
+      mode = "ru-en";
       localStorage.setItem("mode", mode);
+      syncModeButtons();
+      pickNextWord();
+    });
+    enRuBtn.addEventListener("click", () => {
+      mode = "en-ru";
+      localStorage.setItem("mode", mode);
+      syncModeButtons();
       pickNextWord();
     });
     answerEl.addEventListener("keydown", (event) => {
@@ -1209,18 +1215,19 @@
 
     const savedTheme = localStorage.getItem("theme") || "dark";
     applyTheme(savedTheme);
-    mode = localStorage.getItem("mode") || "mixed";
-    modeSelect.value = mode;
+    mode = localStorage.getItem("mode") || "ru-en";
+    if (mode === "mixed") {
+      mode = "ru-en";
+      localStorage.setItem("mode", mode);
+    }
+    syncModeButtons();
     practiceMode = localStorage.getItem("practiceMode") === "true";
-    practiceToggle.checked = practiceMode;
     practiceZeroMode = localStorage.getItem("practiceZeroMode") === "true";
-    practiceZeroToggle.checked = practiceZeroMode;
     if (practiceZeroMode) {
       practiceMode = false;
-      practiceToggle.checked = false;
     }
     practiceOnlyHard = localStorage.getItem("practiceOnlyHard") === "true";
-    practiceHardToggle.checked = practiceOnlyHard;
+    syncStudyModeSelect();
 
     loadWords().then(pickNextWord);
   </script>
