@@ -294,14 +294,6 @@
             <div class="select-wrapper">
                 <select id="material" onchange="updateTariffs()">
                     <option value="">Выберите материал...</option>
-                    <option value="birch_plywood_4">Берёза 4 мм</option>
-                    <option value="birch_plywood_6">Берёза 6 мм</option>
-                    <option value="falkate_3">Фальката 3 мм</option>
-                    <option value="falkate_5">Фальката 5 мм</option>
-                    <option value="acrylic_2_3">Оргстекло 2-3 мм</option>
-                    <option value="acrylic_6">Оргстекло 6 мм</option>
-                    <option value="pressboard_3">Пресскартон 3 мм</option>
-                    <option value="hdf_6">HDF 6 мм</option>
                 </select>
             </div>
             <div class="error" id="materialError">Пожалуйста, выберите материал и заполните цену в таблице</div>
@@ -455,6 +447,7 @@
                 ]
             }
         };
+        let materialOptionsOrder = Object.keys(materialsData);
 
         function normalizeMaterialName(value) {
             return String(value || '')
@@ -462,6 +455,25 @@
                 .replaceAll('ё', 'е')
                 .replace(/\s+/g, ' ')
                 .trim();
+        }
+
+        function populateMaterialOptions(selectedValue = '') {
+            const materialSelect = document.getElementById('material');
+            materialSelect.innerHTML = '<option value="">Выберите материал...</option>';
+
+            materialOptionsOrder.forEach(key => {
+                const material = materialsData[key];
+                if (!material) return;
+
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = material.name;
+                materialSelect.appendChild(option);
+            });
+
+            if (selectedValue && materialsData[selectedValue]) {
+                materialSelect.value = selectedValue;
+            }
         }
 
         function parseCsvLine(line) {
@@ -521,20 +533,36 @@
                     acc[normalizeMaterialName(material.name)] = material;
                     return acc;
                 }, {});
+                const materialKeysByName = Object.entries(materialsData).reduce((acc, [key, material]) => {
+                    acc[normalizeMaterialName(material.name)] = key;
+                    return acc;
+                }, {});
+                const orderedMaterialKeys = [];
 
                 lines.slice(1).forEach(line => {
                     const columns = parseCsvLine(line);
+                    const originalSheetName = String(columns[nameIndex] || '').trim();
                     const sheetName = normalizeMaterialName(columns[nameIndex]);
                     const rawPrice = String(columns[pricePerSqmIndex] || '').replace(',', '.').trim();
                     const pricePerSqm = parseFloat(rawPrice);
 
-                    if (!sheetName || Number.isNaN(pricePerSqm)) return;
+                    if (!sheetName) return;
 
                     const material = materialsByName[sheetName];
-                    if (!material) return;
+                    const materialKey = materialKeysByName[sheetName];
+                    if (!material || !materialKey) return;
+
+                    material.name = originalSheetName || material.name;
+                    orderedMaterialKeys.push(materialKey);
+
+                    if (Number.isNaN(pricePerSqm)) return;
 
                     material.pricePerSqm = pricePerSqm;
                 });
+
+                if (orderedMaterialKeys.length > 0) {
+                    materialOptionsOrder = orderedMaterialKeys;
+                }
             } catch (error) {
                 console.warn('Не удалось загрузить цены материалов из Google Sheets:', error);
             }
@@ -802,6 +830,7 @@
         // Восстанавливаем значения при загрузке
         document.addEventListener('DOMContentLoaded', async function() {
             await loadMaterialPricesFromSheet();
+            populateMaterialOptions();
             loadFormState();
         });
 
