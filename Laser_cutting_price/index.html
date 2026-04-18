@@ -356,98 +356,9 @@
     <script>
         const MATERIALS_CSV_URL = 'https://docs.google.com/spreadsheets/d/10XdqPBSFhIa38pdMMF3_cpP1z4d3naP61IJsG4_hdco/export?format=csv&gid=0';
 
-        // Данные о материалах и тарифах (цена за метр реза в евро)
-        const materialsData = {
-            birch_plywood_4: {
-                name: 'Берёза 4 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.60 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 0.70 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 0.90 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 1.00 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 1.20 },
-                ]
-            },
-            birch_plywood_6: {
-                name: 'Берёза 6 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.90 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 1.25 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 1.60 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 1.70 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 1.80 },
-                ]
-            },
-            falkate_3: {
-                name: 'Фальката 3 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.35 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 0.40 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 0.50 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 0.60 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 0.70 },
-                ]
-            },
-            falkate_5: {
-                name: 'Фальката 5 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.50 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 0.60 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 0.80 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 0.90 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 1.00 },
-                ]
-            },
-            acrylic_2_3: {
-                name: 'Оргстекло 2-3 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.60 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 2.00 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 2.50 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 3.00 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 4.00 },
-                ]
-            },
-            acrylic_6: {
-                name: 'Оргстекло 6 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.90 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 2.50 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 3.50 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 4.00 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 5.00 },
-                ]
-            },
-            pressboard_3: {
-                name: 'Пресскартон 3 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.35 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 0.40 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 0.50 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 0.60 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 0.70 },
-                ]
-            },
-            hdf_6: {
-                name: 'HDF 6 мм',
-                pricePerSqm: null,
-                tariffs: [
-                    { name: '100 изделий', minQty: 100, pricePerMeter: 0.60 },
-                    { name: '50 изделий', minQty: 50, pricePerMeter: 0.70 },
-                    { name: '30 изделий', minQty: 30, pricePerMeter: 0.90 },
-                    { name: '10 изделий', minQty: 10, pricePerMeter: 1.00 },
-                    { name: '1 изделие', minQty: 1, pricePerMeter: 1.20 },
-                ]
-            }
-        };
-        let materialOptionsOrder = Object.keys(materialsData);
+        // Материалы и тарифы загружаются из Google Sheets
+        let materialsData = {};
+        let materialOptionsOrder = [];
 
         function normalizeMaterialName(value) {
             return String(value || '')
@@ -455,6 +366,19 @@
                 .replaceAll('ё', 'е')
                 .replace(/\s+/g, ' ')
                 .trim();
+        }
+
+        function createMaterialKey(value) {
+            const normalized = normalizeMaterialName(value)
+                .replace(/[^a-zа-я0-9]+/gi, '_')
+                .replace(/^_+|_+$/g, '');
+            return normalized || `material_${Date.now()}`;
+        }
+
+        function parseLocalizedFloat(value) {
+            const normalized = String(value || '').replace(',', '.').trim();
+            const parsed = parseFloat(normalized);
+            return Number.isNaN(parsed) ? null : parsed;
         }
 
         function populateMaterialOptions(selectedValue = '') {
@@ -526,41 +450,51 @@
                 const headers = parseCsvLine(lines[0]);
                 const nameIndex = headers.findIndex(header => normalizeMaterialName(header) === 'название');
                 const pricePerSqmIndex = headers.findIndex(header => normalizeMaterialName(header) === '$ м2');
+                const tariffIndexes = [
+                    { header: '100', minQty: 100, name: '100 изделий' },
+                    { header: '50', minQty: 50, name: '50 изделий' },
+                    { header: '30', minQty: 30, name: '30 изделий' },
+                    { header: '10', minQty: 10, name: '10 изделий' },
+                    { header: '1', minQty: 1, name: '1 изделие' }
+                ].map(item => ({
+                    ...item,
+                    index: headers.findIndex(header => normalizeMaterialName(header) === item.header)
+                }));
 
                 if (nameIndex === -1 || pricePerSqmIndex === -1) return;
 
-                const materialsByName = Object.values(materialsData).reduce((acc, material) => {
-                    acc[normalizeMaterialName(material.name)] = material;
-                    return acc;
-                }, {});
-                const materialKeysByName = Object.entries(materialsData).reduce((acc, [key, material]) => {
-                    acc[normalizeMaterialName(material.name)] = key;
-                    return acc;
-                }, {});
+                const nextMaterialsData = {};
                 const orderedMaterialKeys = [];
 
                 lines.slice(1).forEach(line => {
                     const columns = parseCsvLine(line);
                     const originalSheetName = String(columns[nameIndex] || '').trim();
-                    const sheetName = normalizeMaterialName(columns[nameIndex]);
-                    const rawPrice = String(columns[pricePerSqmIndex] || '').replace(',', '.').trim();
-                    const pricePerSqm = parseFloat(rawPrice);
+                    if (!originalSheetName) return;
 
-                    if (!sheetName) return;
+                    const materialKey = createMaterialKey(originalSheetName);
+                    const tariffs = tariffIndexes
+                        .map(item => {
+                            if (item.index === -1) return null;
+                            const pricePerMeter = parseLocalizedFloat(columns[item.index]);
+                            if (pricePerMeter === null) return null;
+                            return {
+                                name: item.name,
+                                minQty: item.minQty,
+                                pricePerMeter
+                            };
+                        })
+                        .filter(Boolean);
 
-                    const material = materialsByName[sheetName];
-                    const materialKey = materialKeysByName[sheetName];
-                    if (!material || !materialKey) return;
-
-                    material.name = originalSheetName || material.name;
+                    nextMaterialsData[materialKey] = {
+                        name: originalSheetName,
+                        pricePerSqm: parseLocalizedFloat(columns[pricePerSqmIndex]),
+                        tariffs
+                    };
                     orderedMaterialKeys.push(materialKey);
-
-                    if (Number.isNaN(pricePerSqm)) return;
-
-                    material.pricePerSqm = pricePerSqm;
                 });
 
                 if (orderedMaterialKeys.length > 0) {
+                    materialsData = nextMaterialsData;
                     materialOptionsOrder = orderedMaterialKeys;
                 }
             } catch (error) {
