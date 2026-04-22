@@ -355,11 +355,9 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_ID = '10XdqPBSFhIa38pdMMF3_cpP1z4d3naP61IJsG4_hdco';
-        const GOOGLE_SHEET_GID = '0';
+        const GOOGLE_SHEET_PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTv8wbha1x9j6XFeFg-dhAuseQvdnUNSIQQaTXmulYytBm6dvrbXmbTfrCV8Ti7oZyY_fHBRbes5QJP/pub?gid=0&single=true&output=csv';
         const MATERIALS_CSV_URLS = [
-            `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=${GOOGLE_SHEET_GID}`,
-            `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GOOGLE_SHEET_GID}`
+            GOOGLE_SHEET_PUBLISHED_CSV_URL
         ];
 
         // Материалы и тарифы загружаются из Google Sheets
