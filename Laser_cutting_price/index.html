@@ -296,6 +296,7 @@
                     <option value="">Выберите материал...</option>
                 </select>
             </div>
+            <div class="unit" id="materialLoadStatus">Загрузка материалов...</div>
             <div class="error" id="materialError">Пожалуйста, выберите материал и заполните цену в таблице</div>
         </div>
 
@@ -354,7 +355,12 @@
     </div>
 
     <script>
-        const MATERIALS_CSV_URL = 'https://docs.google.com/spreadsheets/d/10XdqPBSFhIa38pdMMF3_cpP1z4d3naP61IJsG4_hdco/export?format=csv&gid=0';
+        const GOOGLE_SHEET_ID = '10XdqPBSFhIa38pdMMF3_cpP1z4d3naP61IJsG4_hdco';
+        const GOOGLE_SHEET_GID = '0';
+        const MATERIALS_CSV_URLS = [
+            `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=${GOOGLE_SHEET_GID}`,
+            `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GOOGLE_SHEET_GID}`
+        ];
 
         // Материалы и тарифы загружаются из Google Sheets
         let materialsData = {};
@@ -411,6 +417,12 @@
             }
         }
 
+        function setMaterialLoadStatus(message, isError = false) {
+            const status = document.getElementById('materialLoadStatus');
+            status.textContent = message;
+            status.style.color = isError ? '#ff5f1f' : '#666';
+        }
+
         function parseCsvLine(line) {
             const values = [];
             let current = '';
@@ -445,12 +457,28 @@
 
         async function loadMaterialPricesFromSheet() {
             try {
-                const response = await fetch(MATERIALS_CSV_URL, { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                let csvText = '';
+                let lastError = null;
+
+                for (const url of MATERIALS_CSV_URLS) {
+                    try {
+                        const response = await fetch(url, { cache: 'no-store' });
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        csvText = await response.text();
+                        if (csvText && csvText.trim()) {
+                            break;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                    }
                 }
 
-                const csvText = await response.text();
+                if (!csvText || !csvText.trim()) {
+                    throw lastError || new Error('Пустой ответ от таблицы');
+                }
+
                 const lines = csvText
                     .split(/\r?\n/)
                     .map(line => line.trim())
@@ -508,8 +536,12 @@
                 if (orderedMaterialKeys.length > 0) {
                     materialsData = nextMaterialsData;
                     materialOptionsOrder = orderedMaterialKeys;
+                    setMaterialLoadStatus(`Загружено материалов: ${orderedMaterialKeys.length}`);
+                } else {
+                    setMaterialLoadStatus('В таблице не найдено материалов', true);
                 }
             } catch (error) {
+                setMaterialLoadStatus('Материалы не загружены. Проверьте публикацию таблицы.', true);
                 console.warn('Не удалось загрузить цены материалов из Google Sheets:', error);
             }
         }
