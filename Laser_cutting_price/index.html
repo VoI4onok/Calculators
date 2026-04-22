@@ -362,10 +362,16 @@
 
         function normalizeMaterialName(value) {
             return String(value || '')
+                .replace(/\uFEFF/g, '')
+                .replace(/\u00A0/g, ' ')
                 .toLowerCase()
                 .replaceAll('ё', 'е')
                 .replace(/\s+/g, ' ')
                 .trim();
+        }
+
+        function normalizeHeader(value) {
+            return normalizeMaterialName(value).replace(/\s+/g, '');
         }
 
         function createMaterialKey(value) {
@@ -384,6 +390,11 @@
         function populateMaterialOptions(selectedValue = '') {
             const materialSelect = document.getElementById('material');
             materialSelect.innerHTML = '<option value="">Выберите материал...</option>';
+
+            if (materialOptionsOrder.length === 0) {
+                materialSelect.innerHTML = '<option value="">Материалы не загружены</option>';
+                return;
+            }
 
             materialOptionsOrder.forEach(key => {
                 const material = materialsData[key];
@@ -448,8 +459,9 @@
                 if (lines.length < 2) return;
 
                 const headers = parseCsvLine(lines[0]);
-                const nameIndex = headers.findIndex(header => normalizeMaterialName(header) === 'название');
-                const pricePerSqmIndex = headers.findIndex(header => normalizeMaterialName(header) === '$ м2');
+                const normalizedHeaders = headers.map(normalizeHeader);
+                const nameIndex = normalizedHeaders.findIndex(header => header === 'название');
+                const pricePerSqmIndex = normalizedHeaders.findIndex(header => header === '$м2' || header === '$m2' || header === 'м2' || header === 'm2');
                 const tariffIndexes = [
                     { header: '100', minQty: 100, name: '100 изделий' },
                     { header: '50', minQty: 50, name: '50 изделий' },
@@ -458,7 +470,7 @@
                     { header: '1', minQty: 1, name: '1 изделие' }
                 ].map(item => ({
                     ...item,
-                    index: headers.findIndex(header => normalizeMaterialName(header) === item.header)
+                    index: normalizedHeaders.findIndex(header => header === item.header)
                 }));
 
                 if (nameIndex === -1 || pricePerSqmIndex === -1) return;
