@@ -223,6 +223,18 @@
             color: var(--danger);
         }
 
+        .top-status {
+            min-height: 20px;
+            margin: 6px 0 18px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .top-status.error {
+            color: var(--danger);
+        }
+
         .error {
             display: none;
             margin-top: 6px;
@@ -362,6 +374,45 @@
             line-height: 1.55;
         }
 
+        .import-panel {
+            margin-top: 24px;
+            background: #fffaf4;
+            border: 1px solid rgba(255, 122, 0, 0.12);
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .import-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .import-copy {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 12px;
+            line-height: 1.45;
+        }
+
+        .import-textarea {
+            width: 100%;
+            min-height: 150px;
+            resize: vertical;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .import-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
         @media (max-width: 860px) {
             .container {
                 padding: 24px;
@@ -405,6 +456,7 @@
             </div>
         </div>
 
+        <div class="top-status" id="actionStatus"></div>
         <div class="status" id="materialLoadStatus">Загрузка материалов...</div>
         <div class="cards" id="cards"></div>
 
@@ -429,6 +481,16 @@
             <br>Итог за 1 изделие: резка + гравировка + материал.
             <br>Общая сумма блока: итог за 1 изделие × количество.
             <br>Общая стоимость проекта: сумма всех рассчитанных блоков.
+        </div>
+
+        <div class="import-panel">
+            <div class="import-title">Восстановить проект</div>
+            <div class="import-copy">Вставь сюда ранее сохраненный текст из буфера обмена. Калькулятор распознает блоки и заполнит поля автоматически.</div>
+            <textarea class="import-textarea" id="importTextarea" placeholder="Вставь сохраненную информацию по проекту"></textarea>
+            <div class="import-actions">
+                <button type="button" class="accent-btn" id="importProjectButton">Загрузить в калькулятор</button>
+                <button type="button" class="secondary-btn" id="pasteClipboardButton">Вставить из буфера</button>
+            </div>
         </div>
     </div>
 
@@ -610,6 +672,12 @@
 
         function setMaterialLoadStatus(message, isError = false) {
             const status = document.getElementById('materialLoadStatus');
+            status.textContent = message;
+            status.classList.toggle('error', isError);
+        }
+
+        function setActionStatus(message, isError = false) {
+            const status = document.getElementById('actionStatus');
             status.textContent = message;
             status.classList.toggle('error', isError);
         }
@@ -1076,6 +1144,19 @@
             return normalized === '' ? fallback : normalized;
         }
 
+        function findMaterialKeyByName(name) {
+            const normalized = normalizeMaterialName(name);
+            return materialOptionsOrder.find(key => normalizeMaterialName(materialsData[key]?.name) === normalized) || '';
+        }
+
+        function findTariffIndexByLabel(materialKey, tariffLabel) {
+            const material = materialsData[materialKey];
+            if (!material) return '';
+            const normalized = normalizeMaterialName(String(tariffLabel || '').split(' - ')[0]);
+            const index = material.tariffs.findIndex(tariff => normalizeMaterialName(tariff.name) === normalized);
+            return index === -1 ? '' : String(index);
+        }
+
         function buildProjectSummaryText() {
             const lines = [];
 
@@ -1115,7 +1196,7 @@
 
             try {
                 await navigator.clipboard.writeText(text);
-                setMaterialLoadStatus('Информация по проекту скопирована в буфер обмена');
+                setActionStatus('Информация по проекту скопирована в буфер обмена');
             } catch (error) {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
@@ -1126,7 +1207,120 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                setMaterialLoadStatus('Информация по проекту скопирована в буфер обмена');
+                setActionStatus('Информация по проекту скопирована в буфер обмена');
+            }
+        }
+
+        function parseProjectSummaryText(text) {
+            const normalizedText = String(text || '').replace(/\r/g, '').trim();
+            if (!normalizedText) {
+                throw new Error('Нет текста для загрузки');
+            }
+
+            const lines = normalizedText.split('\n').map(line => line.trim());
+            const blocks = [];
+            let currentBlock = null;
+
+            for (const line of lines) {
+                if (!line) continue;
+                if (line.startsWith('Общая стоимость проекта:')) continue;
+
+                if (!line.includes(':')) {
+                    if (currentBlock) {
+                        blocks.push(currentBlock);
+                    }
+                    currentBlock = { title: line };
+                    continue;
+                }
+
+                if (!currentBlock) continue;
+
+                const separatorIndex = line.indexOf(':');
+                const label = line.slice(0, separatorIndex).trim();
+                const value = line.slice(separatorIndex + 1).trim();
+
+                switch (label) {
+                    case 'Материал':
+                        currentBlock.materialName = value;
+                        break;
+                    case 'Тариф':
+                        currentBlock.tariffLabel = value;
+                        break;
+                    case 'Длина реза':
+                        currentBlock.length = value.replace(/\s*м$/, '').trim();
+                        break;
+                    case 'Время гравировки':
+                        currentBlock.engraveTime = value;
+                        break;
+                    case 'Длина материала':
+                        currentBlock.materialLength = value.replace(/\s*мм$/, '').trim();
+                        break;
+                    case 'Ширина материала':
+                        currentBlock.materialWidth = value.replace(/\s*мм$/, '').trim();
+                        break;
+                    case 'Количество изделий':
+                        currentBlock.quantity = value;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (currentBlock) {
+                blocks.push(currentBlock);
+            }
+
+            return blocks
+                .slice(0, MAX_CARDS)
+                .filter(block => block.title || block.materialName || block.length || block.quantity);
+        }
+
+        function applyImportedBlocks(blocks) {
+            if (!blocks.length) {
+                throw new Error('Не удалось распознать блоки в тексте');
+            }
+
+            cardsState = blocks.map(block => {
+                const card = defaultCardData();
+                card.title = block.title || '';
+                card.length = block.length || '0';
+                card.engraveTime = block.engraveTime || '00:00';
+                card.materialLength = block.materialLength || '0';
+                card.materialWidth = block.materialWidth || '0';
+                card.quantity = block.quantity || '1';
+                card.material = findMaterialKeyByName(block.materialName);
+                card.tariff = card.material ? findTariffIndexByLabel(card.material, block.tariffLabel) : '';
+                card.result = null;
+                return card;
+            });
+
+            renderCards();
+
+            document.querySelectorAll('.card').forEach(cardElement => {
+                calculateCard(cardElement);
+            });
+
+            saveState();
+        }
+
+        async function importProjectFromTextarea() {
+            const textarea = document.getElementById('importTextarea');
+            try {
+                const blocks = parseProjectSummaryText(textarea.value);
+                applyImportedBlocks(blocks);
+                setActionStatus(`Проект загружен. Блоков: ${blocks.length}`);
+            } catch (error) {
+                setActionStatus(error.message || 'Не удалось загрузить проект', true);
+            }
+        }
+
+        async function pasteProjectFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('importTextarea').value = text;
+                setActionStatus('Текст из буфера вставлен в поле загрузки');
+            } catch (error) {
+                setActionStatus('Не удалось прочитать буфер обмена', true);
             }
         }
 
@@ -1347,6 +1541,8 @@
 
         document.getElementById('addCardButton').addEventListener('click', () => addCard());
         document.getElementById('saveProjectButton').addEventListener('click', copyProjectSummary);
+        document.getElementById('importProjectButton').addEventListener('click', importProjectFromTextarea);
+        document.getElementById('pasteClipboardButton').addEventListener('click', pasteProjectFromClipboard);
         document.getElementById('resetAllButton').addEventListener('click', resetAll);
 
         document.addEventListener('DOMContentLoaded', async function() {
