@@ -29,13 +29,11 @@
             min-height: 100vh;
             padding: 20px;
             color: var(--text);
-            overflow-x: auto;
         }
 
         .container {
-            min-width: fit-content;
-            width: max-content;
-            max-width: none;
+            width: min(1200px, 100%);
+            max-width: 100%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(8px);
@@ -107,6 +105,7 @@
             overflow-x: auto;
             padding-bottom: 8px;
             scroll-snap-type: x proximity;
+            width: 100%;
         }
 
         .card {
@@ -115,8 +114,8 @@
             border-radius: 20px;
             padding: 22px;
             box-shadow: 0 10px 30px rgba(255, 122, 0, 0.08);
-            width: 380px;
-            min-width: 380px;
+            width: min(380px, 100%);
+            min-width: min(380px, 100%);
             scroll-snap-align: start;
         }
 
@@ -363,8 +362,8 @@
 
         @media (max-width: 720px) {
             .card {
-                width: min(88vw, 380px);
-                min-width: min(88vw, 380px);
+                width: calc(100vw - 88px);
+                min-width: calc(100vw - 88px);
             }
 
             .input-row,
