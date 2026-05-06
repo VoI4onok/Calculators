@@ -400,6 +400,7 @@
             </div>
             <div class="header-actions">
                 <button type="button" class="accent-btn" id="addCardButton">+ Добавить материал</button>
+                <button type="button" class="secondary-btn" id="saveProjectButton">Сохранить</button>
                 <button type="button" class="secondary-btn" id="resetAllButton">Сбросить всё</button>
             </div>
         </div>
@@ -1070,6 +1071,65 @@
             });
         }
 
+        function formatFieldValue(value, fallback = 'Не указано') {
+            const normalized = String(value ?? '').trim();
+            return normalized === '' ? fallback : normalized;
+        }
+
+        function buildProjectSummaryText() {
+            const lines = [];
+
+            cardsState.forEach((card, index) => {
+                const material = materialsData[card.material];
+                const tariffIndex = parseInt(card.tariff, 10);
+                const tariff = material && !Number.isNaN(tariffIndex) ? material.tariffs[tariffIndex] : null;
+                const title = getCardTitle(card, index);
+
+                lines.push(`${title}`);
+                lines.push(`Материал: ${material ? material.name : 'Не выбран'}`);
+                lines.push(`Тариф: ${tariff ? `${tariff.name} - ${tariff.pricePerMeter} €/м` : 'Не выбран'}`);
+                lines.push(`Длина реза: ${formatFieldValue(card.length, '0')} м`);
+                lines.push(`Время гравировки: ${formatFieldValue(card.engraveTime, '00:00')}`);
+                lines.push(`Длина материала: ${formatFieldValue(card.materialLength, '0')} мм`);
+                lines.push(`Ширина материала: ${formatFieldValue(card.materialWidth, '0')} мм`);
+                lines.push(`Количество изделий: ${formatFieldValue(card.quantity, '0')}`);
+
+                if (card.result) {
+                    lines.push(`Общая сумма за блок: ${card.result.totalPrice.toFixed(2)} €`);
+                    lines.push(`Сумма за 1 изделие: ${card.result.pricePerItem.toFixed(2)} €`);
+                } else {
+                    lines.push('Общая сумма за блок: Не рассчитано');
+                }
+
+                lines.push('');
+            });
+
+            const total = cardsState.reduce((sum, card) => sum + (card.result ? card.result.totalPrice : 0), 0);
+            lines.push(`Общая стоимость проекта: ${total.toFixed(2)} €`);
+
+            return lines.join('\n').trim();
+        }
+
+        async function copyProjectSummary() {
+            const text = buildProjectSummaryText();
+
+            try {
+                await navigator.clipboard.writeText(text);
+                setMaterialLoadStatus('Информация по проекту скопирована в буфер обмена');
+            } catch (error) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'absolute';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                setMaterialLoadStatus('Информация по проекту скопирована в буфер обмена');
+            }
+        }
+
         function syncCardStateFromDOM(cardElement) {
             const card = getCardById(Number(cardElement.dataset.cardId));
             if (!card) return;
@@ -1286,6 +1346,7 @@
         });
 
         document.getElementById('addCardButton').addEventListener('click', () => addCard());
+        document.getElementById('saveProjectButton').addEventListener('click', copyProjectSummary);
         document.getElementById('resetAllButton').addEventListener('click', resetAll);
 
         document.addEventListener('DOMContentLoaded', async function() {
