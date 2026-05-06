@@ -29,10 +29,13 @@
             min-height: 100vh;
             padding: 20px;
             color: var(--text);
+            overflow-x: auto;
         }
 
         .container {
-            max-width: 1200px;
+            min-width: fit-content;
+            width: max-content;
+            max-width: none;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(8px);
@@ -97,10 +100,13 @@
         }
 
         .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            display: flex;
+            flex-wrap: nowrap;
             gap: 20px;
             align-items: start;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scroll-snap-type: x proximity;
         }
 
         .card {
@@ -109,7 +115,9 @@
             border-radius: 20px;
             padding: 22px;
             box-shadow: 0 10px 30px rgba(255, 122, 0, 0.08);
-            height: 100%;
+            width: 380px;
+            min-width: 380px;
+            scroll-snap-align: start;
         }
 
         .card-head {
@@ -354,6 +362,11 @@
         }
 
         @media (max-width: 720px) {
+            .card {
+                width: min(88vw, 380px);
+                min-width: min(88vw, 380px);
+            }
+
             .input-row,
             .result-columns {
                 grid-template-columns: 1fr;
