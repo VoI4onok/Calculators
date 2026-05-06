@@ -52,12 +52,7 @@
 
         .header-copy h1 {
             font-size: 34px;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-size: 14px;
+            margin-bottom: 0;
         }
 
         .header-actions {
@@ -129,6 +124,25 @@
 
         .card-title {
             font-size: 22px;
+            font-weight: 800;
+        }
+
+        .card-title-btn {
+            border: none;
+            background: transparent;
+            padding: 0;
+            font: inherit;
+            color: inherit;
+            cursor: text;
+            text-align: left;
+        }
+
+        .card-title-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid rgba(255, 122, 0, 0.22);
+            border-radius: 10px;
+            font-size: 20px;
             font-weight: 800;
         }
 
@@ -383,7 +397,6 @@
         <div class="header">
             <div class="header-copy">
                 <h1>✂ Лазерная резка</h1>
-                <p class="subtitle">До 10 независимых блоков расчета в одном проекте</p>
             </div>
             <div class="header-actions">
                 <button type="button" class="accent-btn" id="addCardButton">+ Добавить материал</button>
@@ -421,7 +434,10 @@
     <template id="cardTemplate">
         <section class="card">
             <div class="card-head">
-                <div class="card-title">Материал <span class="card-number"></span></div>
+                <div class="card-title">
+                    <button type="button" class="card-title-btn" data-role="title-display"></button>
+                    <input type="text" class="card-title-input" data-role="title-input" style="display: none;">
+                </div>
                 <div class="card-actions">
                     <button type="button" class="icon-btn duplicate-btn" title="Дублировать">⧉</button>
                     <button type="button" class="icon-btn remove-btn" title="Удалить">✕</button>
@@ -718,6 +734,7 @@
         function defaultCardData() {
             return {
                 id: nextCardId++,
+                title: '',
                 length: '0',
                 engraveTime: '00:00',
                 materialLength: '0',
@@ -1048,7 +1065,7 @@
             calculatedCards.forEach((card, index) => {
                 const row = document.createElement('div');
                 row.className = 'overall-item';
-                row.innerHTML = `<span class="overall-item-label">Блок ${index + 1}: ${card.result.material.name}</span><span class="overall-item-value">${card.result.totalPrice.toFixed(2)} €</span>`;
+                row.innerHTML = `<span class="overall-item-label">${getCardTitle(card, index)}: ${card.result.material.name}</span><span class="overall-item-value">${card.result.totalPrice.toFixed(2)} €</span>`;
                 overallList.appendChild(row);
             });
         }
@@ -1065,6 +1082,8 @@
 
         function attachCardEvents(cardElement) {
             const cardId = Number(cardElement.dataset.cardId);
+            const titleDisplay = cardElement.querySelector('[data-role="title-display"]');
+            const titleInput = cardElement.querySelector('[data-role="title-input"]');
             const quantityInput = getField(cardElement, 'quantity');
             const materialSelect = getField(cardElement, 'material');
             const tariffSelect = getField(cardElement, 'tariff');
@@ -1072,6 +1091,32 @@
             const lengthInput = getField(cardElement, 'length');
             const materialLengthInput = getField(cardElement, 'materialLength');
             const materialWidthInput = getField(cardElement, 'materialWidth');
+
+            function commitTitle() {
+                const card = getCardById(cardId);
+                if (!card) return;
+                card.title = titleInput.value.trim();
+                titleDisplay.textContent = getCardTitle(card, cardsState.findIndex(item => item.id === cardId));
+                titleInput.style.display = 'none';
+                titleDisplay.style.display = 'inline';
+                saveState();
+                updateOverallSummary();
+            }
+
+            titleDisplay.addEventListener('click', () => {
+                titleDisplay.style.display = 'none';
+                titleInput.style.display = 'block';
+                titleInput.focus();
+                titleInput.select();
+            });
+
+            titleInput.addEventListener('blur', commitTitle);
+            titleInput.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    commitTitle();
+                }
+            });
 
             [lengthInput, engraveInput, materialLengthInput, materialWidthInput, quantityInput, materialSelect, tariffSelect].forEach(input => {
                 input.addEventListener('input', () => syncCardStateFromDOM(cardElement));
@@ -1127,7 +1172,8 @@
             const template = document.getElementById('cardTemplate');
             const cardElement = template.content.firstElementChild.cloneNode(true);
             cardElement.dataset.cardId = String(cardData.id);
-            cardElement.querySelector('.card-number').textContent = `#${index + 1}`;
+            cardElement.querySelector('[data-role="title-display"]').textContent = getCardTitle(cardData, index);
+            cardElement.querySelector('[data-role="title-input"]').value = cardData.title || '';
 
             getField(cardElement, 'length').value = cardData.length;
             getField(cardElement, 'engraveTime').value = cardData.engraveTime;
@@ -1166,6 +1212,10 @@
 
             document.getElementById('addCardButton').disabled = cardsState.length >= MAX_CARDS;
             updateOverallSummary();
+        }
+
+        function getCardTitle(card, index) {
+            return card.title && card.title.trim() ? card.title.trim() : `Материал #${index + 1}`;
         }
 
         function addCard(prefill = null) {
