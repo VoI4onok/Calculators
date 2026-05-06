@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✂️ Калькулятор стоимости лазерной резки</title>
+    <title>✂ Калькулятор стоимости лазерной резки</title>
     <style>
         * {
             margin: 0;
@@ -11,72 +11,168 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --accent-start: #ff8a00;
+            --accent-end: #ff5f1f;
+            --accent-solid: #ff7a00;
+            --panel: #ffffff;
+            --panel-soft: #f8f9fa;
+            --text: #2e2e2e;
+            --muted: #6d6d6d;
+            --line: #e7e1d8;
+            --danger: #ff5f1f;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ff8a00 0%, #ff5f1f 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
+            color: var(--text);
         }
 
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
-            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            border-radius: 22px;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
+            padding: 32px;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            text-align: center;
-            font-size: 28px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header-copy h1 {
+            font-size: 34px;
+            margin-bottom: 8px;
         }
 
         .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
+            color: var(--muted);
             font-size: 14px;
         }
 
-        .input-group {
-            margin-bottom: 25px;
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .input-row {
-            display: flex;
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .accent-btn {
+            background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(255, 122, 0, 0.26);
+        }
+
+        .secondary-btn {
+            background: #f1f1f1;
+            color: var(--text);
+        }
+
+        .ghost-btn {
+            background: transparent;
+            color: var(--accent-solid);
+            border: 2px dashed rgba(255, 122, 0, 0.35);
+        }
+
+        .cards {
+            display: grid;
             gap: 20px;
         }
 
-        .input-row .input-group {
-            flex: 1;
+        .card {
+            background: var(--panel);
+            border: 1px solid rgba(255, 122, 0, 0.12);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 10px 30px rgba(255, 122, 0, 0.08);
         }
 
-        label {
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            min-width: 44px;
+            padding: 10px 12px;
+            background: var(--panel-soft);
+            color: var(--text);
+        }
+
+        .icon-btn.remove-btn {
+            color: var(--danger);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .input-row.single {
+            grid-template-columns: 1fr;
+        }
+
+        .input-group label {
             display: block;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 8px;
             font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        input[type="text"], input[type="number"], select {
+        input[type="text"],
+        input[type="number"],
+        select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fff;
+            transition: border-color 0.2s;
         }
 
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
             outline: none;
-            border-color: #ff8a00;
+            border-color: var(--accent-solid);
         }
 
         .select-wrapper {
@@ -85,284 +181,341 @@
 
         .select-wrapper select {
             appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d6d6d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-size: 20px;
+            background-size: 18px;
             padding-right: 36px;
         }
 
-        .unit {
-            color: #666;
+        .unit,
+        .status {
+            margin-top: 6px;
             font-size: 12px;
-            margin-top: 5px;
+            color: var(--muted);
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .calculate-btn {
-            background: linear-gradient(135deg, #ff8a00 0%, #ff5f1f 100%);
-            color: white;
-        }
-
-        .calculate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 138, 0, 0.4);
-        }
-
-        .calculate-btn:active {
-            transform: translateY(0);
-        }
-
-        .reset-btn {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .reset-btn:hover {
-            background: #e0e0e0;
-            transform: translateY(-2px);
-        }
-
-        .reset-btn:active {
-            transform: translateY(0);
-        }
-
-        .result {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            border-left: 4px solid #ff8a00;
-            display: none;
-        }
-
-        .result.show {
-            display: block;
-        }
-        .result-columns {
-            display: flex;
-            gap: 24px;
-        }
-        .result-column {
-            flex: 1;
-        }
-        .result-title {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 6px;
-        }
-
-        .result-label {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .result-value {
-            font-size: 36px;
-            font-weight: 700;
-            color: #ff8a00;
-            margin-bottom: 12px;
-        }
-        .result-value:last-of-type {
-            margin-bottom: 0;
-        }
-        .result-sub {
-            font-size: 14px;
-            color: #666;
-            margin-top: 6px;
-        }
-        .tariff-list {
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1px solid #e8dcc7;
-        }
-        .tariff-list-title {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        .tariff-item {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 13px;
-            color: #444;
-            margin-top: 6px;
-        }
-        .tariff-item-label {
-            color: #666;
-        }
-        .tariff-item-value {
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        @media (max-width: 600px) {
-            .result-columns {
-                flex-direction: column;
-            }
-        }
-
-        .currency {
-            font-size: 18px;
-            color: #666;
+        .status.error {
+            color: var(--danger);
         }
 
         .error {
-            color: #ff5f1f;
-            font-size: 12px;
-            margin-top: 5px;
             display: none;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--danger);
         }
 
         .error.show {
             display: block;
         }
 
-        .notice {
-            font-size: 12px;
-            color: #666;
-            margin-top: 30px;
-            line-height: 1.5;
+        .card-footer {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+            margin-bottom: 18px;
         }
 
-        @media (max-width: 600px) {
-            .input-row {
+        .result {
+            display: none;
+            background: var(--panel-soft);
+            border-left: 4px solid var(--accent-solid);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-columns {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .result-title {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--accent-solid);
+            margin-bottom: 10px;
+        }
+
+        .result-sub {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .tariff-list {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .tariff-list-title {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .tariff-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .tariff-item-label {
+            color: var(--muted);
+        }
+
+        .tariff-item-value {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .overall {
+            margin-top: 26px;
+            background: linear-gradient(135deg, #fff5ea 0%, #fff 100%);
+            border: 1px solid rgba(255, 122, 0, 0.16);
+            border-radius: 20px;
+            padding: 22px;
+        }
+
+        .overall-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .overall-title {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .overall-value {
+            font-size: 34px;
+            font-weight: 900;
+            color: var(--accent-solid);
+        }
+
+        .overall-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .overall-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .overall-item-label {
+            color: var(--muted);
+        }
+
+        .overall-item-value {
+            font-weight: 700;
+        }
+
+        .notice {
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        @media (max-width: 860px) {
+            .container {
+                padding: 24px;
+            }
+
+            .header,
+            .overall-top {
                 flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .input-row,
+            .result-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .card-head {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>✂️ Лазерная резка</h1>
-        <p class="subtitle">Калькулятор стоимости резки</p>
-
-        <div class="input-row">
-            <div class="input-group">
-                <label for="length">Длина реза</label>
-                <input type="number" id="length" placeholder="Например: 5" value="0" step="0.1" min="0">
-                <div class="unit">м</div>
-                <div class="error" id="lengthError">Пожалуйста, введите корректное число</div>
+        <div class="header">
+            <div class="header-copy">
+                <h1>✂ Лазерная резка</h1>
+                <p class="subtitle">До 10 независимых блоков расчета в одном проекте</p>
             </div>
-
-            <div class="input-group">
-                <label for="engraveTime">Время гравировки</label>
-                <input type="text" id="engraveTime" placeholder="Например: 00:15" value="00:00" inputmode="numeric">
+            <div class="header-actions">
+                <button type="button" class="accent-btn" id="addCardButton">+ Добавить материал</button>
+                <button type="button" class="secondary-btn" id="resetAllButton">Сбросить всё</button>
             </div>
         </div>
 
-        <div class="input-row">
-            <div class="input-group">
-                <label for="materialLength">Длина материала</label>
-                <input type="number" id="materialLength" placeholder="Например: 500" value="0" step="10" min="0">
-                <div class="unit">мм</div>
-                <div class="error" id="materialLengthError">Пожалуйста, введите длину материала</div>
+        <div class="status" id="materialLoadStatus">Загрузка материалов...</div>
+        <div class="cards" id="cards"></div>
+
+        <div class="overall">
+            <div class="overall-top">
+                <div class="overall-title">Общая стоимость проекта</div>
+                <div class="overall-value"><span id="overallTotalPrice">0.00</span> €</div>
             </div>
-
-            <div class="input-group">
-                <label for="materialWidth">Ширина материала</label>
-                <input type="number" id="materialWidth" placeholder="Например: 300" value="0" step="10" min="0">
-                <div class="unit">мм</div>
-                <div class="error" id="materialWidthError">Пожалуйста, введите ширину материала</div>
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label for="quantity">Количество изделий</label>
-            <input type="number" id="quantity" placeholder="Например: 10" value="1" step="1" min="1">
-            <div class="error" id="quantityError">Пожалуйста, введите количество</div>
-        </div>
-
-        <div class="input-group">
-            <label for="material">Материал</label>
-            <div class="select-wrapper">
-                <select id="material" onchange="updateTariffs()">
-                    <option value="">Выберите материал...</option>
-                </select>
-            </div>
-            <div class="unit" id="materialLoadStatus">Загрузка материалов...</div>
-            <div class="error" id="materialError">Пожалуйста, выберите материал и заполните цену в таблице</div>
-        </div>
-
-        <div class="input-group">
-            <label for="tariff">Тариф</label>
-            <div class="select-wrapper">
-                <select id="tariff">
-                    <option value="">Сначала выберите материал</option>
-                </select>
-            </div>
-            <div class="error" id="tariffError">Пожалуйста, выберите тариф</div>
-        </div>
-
-        <div class="button-group">
-            <button class="calculate-btn" onclick="calculatePrice()">Рассчитать</button>
-            <button class="reset-btn" onclick="resetForm()">Сброс</button>
-        </div>
-
-    <div class="result" id="result">
-        <div class="result-columns">
-            <div class="result-column">
-                <div class="result-title">Общая сумма:</div>
-                <div class="result-value"><span id="resultTotalPrice">0</span> <span class="currency">€</span></div>
-                <div class="result-sub">Площадь: <span id="resultAreaTotal">0</span> м²</div>
-                <div class="result-sub">Резка: <span id="resultCuttingPrice">0</span> €</div>
-                <div class="result-sub">Гравировка: <span id="resultEngravePrice">0</span> €</div>
-                <div class="result-sub">Материал: <span id="resultMaterialPrice">0</span> €</div>
-                <div class="tariff-list">
-                    <div class="tariff-list-title">Остальные тарифы:</div>
-                    <div id="resultOtherTariffsTotal"></div>
-                </div>
-            </div>
-            <div class="result-column">
-                <div class="result-title">Сумма за 1 изделие:</div>
-                <div class="result-value"><span id="resultPricePerItem">0</span> <span class="currency">€</span></div>
-                <div class="result-sub">Площадь: <span id="resultAreaPerItem">0</span> м²</div>
-                <div class="result-sub">Резка: <span id="resultCuttingPricePerItem">0</span> €</div>
-                <div class="result-sub">Гравировка: <span id="resultEngravePricePerItem">0</span> €</div>
-                <div class="result-sub">Материал: <span id="resultMaterialPricePerItem">0</span> €</div>
-                <div class="tariff-list">
-                    <div class="tariff-list-title">Остальные тарифы:</div>
-                    <div id="resultOtherTariffsPerItem"></div>
+            <div class="overall-list" id="overallList">
+                <div class="overall-item">
+                    <span class="overall-item-label">Пока нет рассчитанных блоков</span>
+                    <span class="overall-item-value">0.00 €</span>
                 </div>
             </div>
         </div>
+
+        <div class="notice">
+            <strong>Пояснения по расчёту:</strong>
+            <br>Резка: длина реза × тариф (€/м).
+            <br>Гравировка: (минуты / 60) × 30 € за изделие.
+            <br>Материал: (длина × ширина в мм → м²) × 1.1 × цена материала (€/м²).
+            <br>Итог за 1 изделие: резка + гравировка + материал.
+            <br>Общая сумма блока: итог за 1 изделие × количество.
+            <br>Общая стоимость проекта: сумма всех рассчитанных блоков.
+        </div>
     </div>
 
-    <div class="notice">
-        <strong>Пояснения по расчёту:</strong>
-        <br>Резка: длина реза × тариф (€/м).
-        <br>Гравировка: (минуты / 60) × 30 € за изделие.
-        <br>Материал: (длина × ширина в мм → м²) × 1.1 × цена материала (€/м²).
-        <br>Итог за 1 изделие: резка + гравировка + материал.
-        <br>Общая сумма: итог за 1 изделие × количество.
-    </div>
-    </div>
+    <template id="cardTemplate">
+        <section class="card">
+            <div class="card-head">
+                <div class="card-title">Материал <span class="card-number"></span></div>
+                <div class="card-actions">
+                    <button type="button" class="icon-btn duplicate-btn" title="Дублировать">⧉</button>
+                    <button type="button" class="icon-btn remove-btn" title="Удалить">✕</button>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Длина реза</label>
+                    <input type="number" data-field="length" value="0" step="0.1" min="0" placeholder="Например: 5">
+                    <div class="unit">м</div>
+                    <div class="error" data-error="length">Пожалуйста, введите корректное число</div>
+                </div>
+                <div class="input-group">
+                    <label>Время гравировки</label>
+                    <input type="text" data-field="engraveTime" value="00:00" inputmode="numeric" placeholder="Например: 00:15">
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Длина материала</label>
+                    <input type="number" data-field="materialLength" value="0" step="10" min="0" placeholder="Например: 500">
+                    <div class="unit">мм</div>
+                    <div class="error" data-error="materialLength">Пожалуйста, введите длину материала</div>
+                </div>
+                <div class="input-group">
+                    <label>Ширина материала</label>
+                    <input type="number" data-field="materialWidth" value="0" step="10" min="0" placeholder="Например: 300">
+                    <div class="unit">мм</div>
+                    <div class="error" data-error="materialWidth">Пожалуйста, введите ширину материала</div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Количество изделий</label>
+                    <input type="number" data-field="quantity" value="1" step="1" min="1" placeholder="Например: 10">
+                    <div class="error" data-error="quantity">Пожалуйста, введите количество</div>
+                </div>
+                <div class="input-group">
+                    <label>Материал</label>
+                    <div class="select-wrapper">
+                        <select data-field="material">
+                            <option value="">Выберите материал...</option>
+                        </select>
+                    </div>
+                    <div class="error" data-error="material">Пожалуйста, выберите материал и заполните цену в таблице</div>
+                </div>
+            </div>
+
+            <div class="input-row single">
+                <div class="input-group">
+                    <label>Тариф</label>
+                    <div class="select-wrapper">
+                        <select data-field="tariff">
+                            <option value="">Сначала выберите материал</option>
+                        </select>
+                    </div>
+                    <div class="error" data-error="tariff">Пожалуйста, выберите тариф</div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="button" class="accent-btn calculate-btn">Рассчитать</button>
+                <button type="button" class="secondary-btn reset-btn">Сбросить блок</button>
+            </div>
+
+            <div class="result">
+                <div class="result-columns">
+                    <div>
+                        <div class="result-title">Общая сумма блока</div>
+                        <div class="result-value"><span data-result="totalPrice">0.00</span> €</div>
+                        <div class="result-sub">Площадь: <span data-result="areaTotal">0.000</span> м²</div>
+                        <div class="result-sub">Резка: <span data-result="cuttingTotal">0.00</span> €</div>
+                        <div class="result-sub">Гравировка: <span data-result="engraveTotal">0.00</span> €</div>
+                        <div class="result-sub">Материал: <span data-result="materialTotal">0.00</span> €</div>
+                        <div class="tariff-list">
+                            <div class="tariff-list-title">Остальные тарифы:</div>
+                            <div data-result="otherTariffsTotal"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="result-title">Сумма за 1 изделие</div>
+                        <div class="result-value"><span data-result="pricePerItem">0.00</span> €</div>
+                        <div class="result-sub">Площадь: <span data-result="areaPerItem">0.000</span> м²</div>
+                        <div class="result-sub">Резка: <span data-result="cuttingPerItem">0.00</span> €</div>
+                        <div class="result-sub">Гравировка: <span data-result="engravePerItem">0.00</span> €</div>
+                        <div class="result-sub">Материал: <span data-result="materialPerItem">0.00</span> €</div>
+                        <div class="tariff-list">
+                            <div class="tariff-list-title">Остальные тарифы:</div>
+                            <div data-result="otherTariffsPerItem"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
 
     <script>
         const GOOGLE_SHEET_PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTv8wbha1x9j6XFeFg-dhAuseQvdnUNSIQQaTXmulYytBm6dvrbXmbTfrCV8Ti7oZyY_fHBRbes5QJP/pub?gid=0&single=true&output=csv';
-        const MATERIALS_CSV_URLS = [
-            GOOGLE_SHEET_PUBLISHED_CSV_URL
-        ];
+        const MAX_CARDS = 10;
+        const STORAGE_KEY = 'laserCalcMultiState';
+        const MATERIALS_CSV_URLS = [GOOGLE_SHEET_PUBLISHED_CSV_URL];
 
-        // Материалы и тарифы загружаются из Google Sheets
         let materialsData = {};
         let materialOptionsOrder = [];
+        let cardsState = [];
+        let nextCardId = 1;
 
         function normalizeMaterialName(value) {
             return String(value || '')
@@ -389,36 +542,6 @@
             const normalized = String(value || '').replace(',', '.').trim();
             const parsed = parseFloat(normalized);
             return Number.isNaN(parsed) ? null : parsed;
-        }
-
-        function populateMaterialOptions(selectedValue = '') {
-            const materialSelect = document.getElementById('material');
-            materialSelect.innerHTML = '<option value="">Выберите материал...</option>';
-
-            if (materialOptionsOrder.length === 0) {
-                materialSelect.innerHTML = '<option value="">Материалы не загружены</option>';
-                return;
-            }
-
-            materialOptionsOrder.forEach(key => {
-                const material = materialsData[key];
-                if (!material) return;
-
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = material.name;
-                materialSelect.appendChild(option);
-            });
-
-            if (selectedValue && materialsData[selectedValue]) {
-                materialSelect.value = selectedValue;
-            }
-        }
-
-        function setMaterialLoadStatus(message, isError = false) {
-            const status = document.getElementById('materialLoadStatus');
-            status.textContent = message;
-            status.style.color = isError ? '#ff5f1f' : '#666';
         }
 
         function parseCsvLine(line) {
@@ -453,7 +576,13 @@
             return values;
         }
 
-        async function loadMaterialPricesFromSheet() {
+        function setMaterialLoadStatus(message, isError = false) {
+            const status = document.getElementById('materialLoadStatus');
+            status.textContent = message;
+            status.classList.toggle('error', isError);
+        }
+
+        async function loadMaterialsFromSheet() {
             try {
                 let csvText = '';
                 let lastError = null;
@@ -482,7 +611,9 @@
                     .map(line => line.trim())
                     .filter(Boolean);
 
-                if (lines.length < 2) return;
+                if (lines.length < 2) {
+                    throw new Error('В таблице нет данных');
+                }
 
                 const headers = parseCsvLine(lines[0]);
                 const normalizedHeaders = headers.map(normalizeHeader);
@@ -499,7 +630,9 @@
                     index: normalizedHeaders.findIndex(header => header === item.header)
                 }));
 
-                if (nameIndex === -1 || pricePerSqmIndex === -1) return;
+                if (nameIndex === -1 || pricePerSqmIndex === -1) {
+                    throw new Error('Не найдены колонки "Название" или "$ м2"');
+                }
 
                 const nextMaterialsData = {};
                 const orderedMaterialKeys = [];
@@ -531,398 +664,168 @@
                     orderedMaterialKeys.push(materialKey);
                 });
 
-                if (orderedMaterialKeys.length > 0) {
-                    materialsData = nextMaterialsData;
-                    materialOptionsOrder = orderedMaterialKeys;
-                    setMaterialLoadStatus(`Загружено материалов: ${orderedMaterialKeys.length}`);
-                } else {
-                    setMaterialLoadStatus('В таблице не найдено материалов', true);
+                if (orderedMaterialKeys.length === 0) {
+                    throw new Error('В таблице не найдено материалов');
                 }
+
+                materialsData = nextMaterialsData;
+                materialOptionsOrder = orderedMaterialKeys;
+                setMaterialLoadStatus(`Загружено материалов: ${orderedMaterialKeys.length}`);
             } catch (error) {
+                materialsData = {};
+                materialOptionsOrder = [];
                 setMaterialLoadStatus('Материалы не загружены. Проверьте публикацию таблицы.', true);
-                console.warn('Не удалось загрузить цены материалов из Google Sheets:', error);
+                console.warn('Не удалось загрузить материалы из Google Sheets:', error);
             }
         }
-
-        function selectTariffByQuantity() {
-            const materialValue = document.getElementById('material').value;
-            const quantity = parseInt(document.getElementById('quantity').value, 10);
-            const tariffSelect = document.getElementById('tariff');
-
-            if (!materialValue || isNaN(quantity) || quantity < 1) return;
-
-            const material = materialsData[materialValue];
-            if (!material) return;
-
-            let selectedIndex = material.tariffs.findIndex(t => quantity >= t.minQty);
-            if (selectedIndex === -1) {
-                selectedIndex = material.tariffs.length - 1;
-            }
-
-            tariffSelect.value = String(selectedIndex);
-        }
-
-        function updateTariffs() {
-            const selectedMaterial = document.getElementById('material').value;
-            const tariffSelect = document.getElementById('tariff');
-            const tariffError = document.getElementById('tariffError');
-            
-            tariffSelect.innerHTML = '';
-            tariffError.classList.remove('show');
-            
-            if (!selectedMaterial) {
-                tariffSelect.innerHTML = '<option value="">Сначала выберите материал</option>';
-                return;
-            }
-            
-            const material = materialsData[selectedMaterial];
-            if (material) {
-                const firstOption = document.createElement('option');
-                firstOption.value = '';
-                firstOption.textContent = 'Выберите тариф...';
-                tariffSelect.appendChild(firstOption);
-                
-                material.tariffs.forEach((tariff, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = `${tariff.name} - ${tariff.pricePerMeter} €/м`;
-                    tariffSelect.appendChild(option);
-                });
-
-                selectTariffByQuantity();
-            }
-        }
-
-        function renderOtherTariffs(material, selectedTariffIndex, length, engravePricePerItem, materialPricePerItem, quantity) {
-            const totalContainer = document.getElementById('resultOtherTariffsTotal');
-            const perItemContainer = document.getElementById('resultOtherTariffsPerItem');
-
-            totalContainer.innerHTML = '';
-            perItemContainer.innerHTML = '';
-
-            material.tariffs.forEach((tariff, index) => {
-                if (index === selectedTariffIndex) return;
-
-                const cuttingPricePerItem = length * tariff.pricePerMeter;
-                const pricePerItem = cuttingPricePerItem + engravePricePerItem + materialPricePerItem;
-                const totalPrice = pricePerItem * quantity;
-
-                const perItemRow = document.createElement('div');
-                perItemRow.className = 'tariff-item';
-                perItemRow.innerHTML = `<span class="tariff-item-label">${tariff.name}</span><span class="tariff-item-value">${pricePerItem.toFixed(2)} €</span>`;
-                perItemContainer.appendChild(perItemRow);
-
-                const totalRow = document.createElement('div');
-                totalRow.className = 'tariff-item';
-                totalRow.innerHTML = `<span class="tariff-item-label">${tariff.name}</span><span class="tariff-item-value">${totalPrice.toFixed(2)} €</span>`;
-                totalContainer.appendChild(totalRow);
-            });
-        }
-
-        function calculatePrice() {
-            const length = parseFloat(document.getElementById('length').value) || 0;
-            const materialLengthMm = parseFloat(document.getElementById('materialLength').value) || 0;
-            const materialWidthMm = parseFloat(document.getElementById('materialWidth').value) || 0;
-            const quantity = parseInt(document.getElementById('quantity').value, 10);
-            const materialValue = document.getElementById('material').value;
-            const tariffValue = document.getElementById('tariff').value;
-
-            // Очищаем все ошибки
-            document.getElementById('lengthError').classList.remove('show');
-            document.getElementById('materialLengthError').classList.remove('show');
-            document.getElementById('materialWidthError').classList.remove('show');
-            document.getElementById('quantityError').classList.remove('show');
-            document.getElementById('materialError').classList.remove('show');
-            document.getElementById('tariffError').classList.remove('show');
-
-            // Валидация
-            let hasError = false;
-
-            if (length <= 0) {
-                document.getElementById('lengthError').classList.add('show');
-                hasError = true;
-            }
-
-            if (materialLengthMm <= 0) {
-                document.getElementById('materialLengthError').classList.add('show');
-                hasError = true;
-            }
-
-            if (materialWidthMm <= 0) {
-                document.getElementById('materialWidthError').classList.add('show');
-                hasError = true;
-            }
-
-            if (isNaN(quantity) || quantity < 1) {
-                document.getElementById('quantityError').classList.add('show');
-                hasError = true;
-            }
-
-            if (!materialValue) {
-                document.getElementById('materialError').classList.add('show');
-                hasError = true;
-            }
-
-            const selectedMaterial = materialsData[materialValue];
-            if (materialValue && (!selectedMaterial || typeof selectedMaterial.pricePerSqm !== 'number' || Number.isNaN(selectedMaterial.pricePerSqm))) {
-                document.getElementById('materialError').classList.add('show');
-                hasError = true;
-            }
-
-            if (tariffValue === '') {
-                document.getElementById('tariffError').classList.add('show');
-                hasError = true;
-            }
-
-            if (hasError) {
-                document.getElementById('result').classList.remove('show');
-                return;
-            }
-
-            // Расчёт
-            const material = materialsData[materialValue];
-            const tariffIndex = parseInt(tariffValue);
-            const tariff = material.tariffs[tariffIndex];
-            const pricePerMeter = tariff.pricePerMeter;
-            
-            const engraveMinutes = parseClockToMinutes(document.getElementById('engraveTime').value);
-            const engravePricePerItem = (engraveMinutes / 60) * 30;
-            const materialArea = (materialLengthMm / 1000) * (materialWidthMm / 1000);
-            const materialPricePerItem = materialArea * 1.1 * material.pricePerSqm;
-
-            const cuttingPricePerItem = length * pricePerMeter;
-            const pricePerItem = cuttingPricePerItem + engravePricePerItem + materialPricePerItem;
-            const totalPrice = pricePerItem * quantity;
-
-            document.getElementById('resultCuttingPrice').textContent = (cuttingPricePerItem * quantity).toFixed(2);
-            document.getElementById('resultEngravePrice').textContent = (engravePricePerItem * quantity).toFixed(2);
-            document.getElementById('resultMaterialPrice').textContent = (materialPricePerItem * quantity).toFixed(2);
-            document.getElementById('resultAreaTotal').textContent = (materialArea * quantity).toFixed(3);
-            document.getElementById('resultPricePerItem').textContent = pricePerItem.toFixed(2);
-            document.getElementById('resultCuttingPricePerItem').textContent = cuttingPricePerItem.toFixed(2);
-            document.getElementById('resultEngravePricePerItem').textContent = engravePricePerItem.toFixed(2);
-            document.getElementById('resultMaterialPricePerItem').textContent = materialPricePerItem.toFixed(2);
-            document.getElementById('resultAreaPerItem').textContent = materialArea.toFixed(3);
-            document.getElementById('resultTotalPrice').textContent = totalPrice.toFixed(2);
-            renderOtherTariffs(material, tariffIndex, length, engravePricePerItem, materialPricePerItem, quantity);
-            document.getElementById('result').classList.add('show');
-        }
-
-        function resetForm() {
-            document.getElementById('length').value = '0';
-            document.getElementById('materialLength').value = '0';
-            document.getElementById('materialWidth').value = '0';
-            document.getElementById('engraveTime').value = '00:00';
-            document.getElementById('engraveTime').dataset.minutes = '0';
-            document.getElementById('quantity').value = '1';
-            document.getElementById('material').value = '';
-            document.getElementById('tariff').innerHTML = '<option value="">Сначала выберите материал</option>';
-            document.getElementById('result').classList.remove('show');
-            document.getElementById('resultCuttingPrice').textContent = '0';
-            document.getElementById('resultEngravePrice').textContent = '0';
-            document.getElementById('resultMaterialPrice').textContent = '0';
-            document.getElementById('resultAreaTotal').textContent = '0';
-            document.getElementById('resultPricePerItem').textContent = '0';
-            document.getElementById('resultCuttingPricePerItem').textContent = '0';
-            document.getElementById('resultEngravePricePerItem').textContent = '0';
-            document.getElementById('resultMaterialPricePerItem').textContent = '0';
-            document.getElementById('resultAreaPerItem').textContent = '0';
-            document.getElementById('resultTotalPrice').textContent = '0';
-            document.getElementById('resultOtherTariffsTotal').innerHTML = '';
-            document.getElementById('resultOtherTariffsPerItem').innerHTML = '';
-            
-            // Очищаем ошибки
-            document.getElementById('lengthError').classList.remove('show');
-            document.getElementById('materialLengthError').classList.remove('show');
-            document.getElementById('materialWidthError').classList.remove('show');
-            document.getElementById('quantityError').classList.remove('show');
-            document.getElementById('materialError').classList.remove('show');
-            document.getElementById('tariffError').classList.remove('show');
-            localStorage.removeItem('laserCalcState');
-        }
-
-        function saveFormState() {
-            const state = {
-                length: document.getElementById('length').value,
-                engraveTime: document.getElementById('engraveTime').value,
-                engraveMinutes: document.getElementById('engraveTime').dataset.minutes || '0',
-                materialLength: document.getElementById('materialLength').value,
-                materialWidth: document.getElementById('materialWidth').value,
-                quantity: document.getElementById('quantity').value,
-                material: document.getElementById('material').value,
-                tariff: document.getElementById('tariff').value
-            };
-            localStorage.setItem('laserCalcState', JSON.stringify(state));
-        }
-
-        function loadFormState() {
-            const raw = localStorage.getItem('laserCalcState');
-            if (!raw) return;
-            let state;
-            try {
-                state = JSON.parse(raw);
-            } catch (e) {
-                return;
-            }
-            if (!state) return;
-
-            document.getElementById('length').value = state.length ?? '0';
-            document.getElementById('materialLength').value = state.materialLength ?? '0';
-            document.getElementById('materialWidth').value = state.materialWidth ?? '0';
-            document.getElementById('engraveTime').value = state.engraveTime ?? '00:00';
-            document.getElementById('engraveTime').dataset.minutes = state.engraveMinutes ?? '0';
-            document.getElementById('quantity').value = state.quantity ?? '1';
-            document.getElementById('material').value = state.material ?? '';
-
-            updateTariffs();
-            if (state.tariff !== undefined && state.tariff !== null && state.tariff !== '') {
-                document.getElementById('tariff').value = state.tariff;
-            }
-        }
-
-        // Позволяем рассчитать по Enter
-        document.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                calculatePrice();
-            }
-        });
-
-        // Сохраняем значения при изменениях
-        [
-            'length',
-            'engraveTime',
-            'materialLength',
-            'materialWidth',
-            'quantity',
-            'material',
-            'tariff'
-        ].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('input', saveFormState);
-            el.addEventListener('change', saveFormState);
-        });
-
-        // Восстанавливаем значения при загрузке
-        document.addEventListener('DOMContentLoaded', async function() {
-            await loadMaterialPricesFromSheet();
-            populateMaterialOptions();
-            loadFormState();
-        });
-
-        const lengthStep = 0.1;
-        const lengthInput = document.getElementById('length');
-
-        function clampRoundLength(value) {
-            const rounded = Math.round(value / lengthStep) * lengthStep;
-            return Math.max(0, rounded);
-        }
-
-        // Округляем ручной ввод до 0.1
-        lengthInput.addEventListener('change', function() {
-            if (this.value === '') return;
-            const parsed = parseFloat(String(this.value).replace(',', '.'));
-            if (isNaN(parsed)) {
-                this.value = '0';
-                return;
-            }
-            this.value = clampRoundLength(parsed).toFixed(1);
-        });
-
-        // Автоподбор тарифа по количеству изделий
-        document.getElementById('quantity').addEventListener('change', selectTariffByQuantity);
-
-        // Реагирование на колёсико мышки для поля количества изделий
-        const quantityInput = document.getElementById('quantity');
-        quantityInput.dataset.wheelArmed = '0';
-        quantityInput.addEventListener('mousedown', function() {
-            this.dataset.wheelArmed = '1';
-        });
-        quantityInput.addEventListener('blur', function() {
-            this.dataset.wheelArmed = '0';
-        });
-        quantityInput.addEventListener('wheel', function(event) {
-            if (this.dataset.wheelArmed !== '1') return;
-            event.preventDefault();
-
-            const currentValue = parseInt(this.value, 10) || 0;
-            const direction = event.deltaY > 0 ? -1 : 1; // вверх увеличивает, вниз уменьшает
-            const newValue = Math.max(1, currentValue + (1 * direction));
-
-            this.value = String(newValue);
-            selectTariffByQuantity();
-        });
 
         function formatMinutesToClock(totalMinutes) {
             const minutes = Math.max(0, Math.floor(totalMinutes));
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
-            const hh = String(hours).padStart(2, '0');
-            const mm = String(mins).padStart(2, '0');
-            return `${hh}:${mm}`;
+            return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
         }
 
         function parseClockToMinutes(value) {
-            const raw = String(value).trim();
+            const raw = String(value || '').trim();
             if (!raw) return 0;
             if (raw.includes(':')) {
                 const parts = raw.split(':');
-                const h = parseInt(parts[0], 10);
-                const m = parseInt(parts[1], 10);
-                if (isNaN(h) || isNaN(m)) return 0;
-                return Math.max(0, h * 60 + m);
+                const hours = parseInt(parts[0], 10);
+                const minutes = parseInt(parts[1], 10);
+                if (Number.isNaN(hours) || Number.isNaN(minutes)) return 0;
+                return Math.max(0, (hours * 60) + minutes);
             }
-            const num = parseInt(raw.replace(',', '.'), 10);
-            return isNaN(num) ? 0 : Math.max(0, num);
+            const parsed = parseInt(raw.replace(',', '.'), 10);
+            return Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
         }
 
-        // Реагирование на колёсико мышки для поля времени гравировки
-        const engraveInput = document.getElementById('engraveTime');
-        engraveInput.dataset.minutes = '0';
-        engraveInput.dataset.wheelArmed = '0';
-        engraveInput.addEventListener('mousedown', function() {
-            this.dataset.wheelArmed = '1';
-        });
-        engraveInput.addEventListener('blur', function() {
-            this.dataset.wheelArmed = '0';
-        });
-        engraveInput.addEventListener('change', function() {
-            const minutes = parseClockToMinutes(this.value);
-            this.dataset.minutes = String(minutes);
-            this.value = formatMinutesToClock(minutes);
-        });
-        engraveInput.addEventListener('wheel', function(event) {
-            if (this.dataset.wheelArmed !== '1') return;
-            event.preventDefault();
+        function defaultCardData() {
+            return {
+                id: nextCardId++,
+                length: '0',
+                engraveTime: '00:00',
+                materialLength: '0',
+                materialWidth: '0',
+                quantity: '1',
+                material: '',
+                tariff: '',
+                result: null
+            };
+        }
 
-            const currentMinutes = parseInt(this.dataset.minutes || '0', 10) || 0;
-            const direction = event.deltaY > 0 ? -1 : 1; // вверх увеличивает, вниз уменьшает
-            const newMinutes = Math.max(0, currentMinutes + (1 * direction));
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                nextCardId,
+                cardsState
+            }));
+        }
 
-            this.dataset.minutes = String(newMinutes);
-            this.value = formatMinutesToClock(newMinutes);
-        });
+        function loadState() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) {
+                cardsState = [defaultCardData()];
+                return;
+            }
 
-        // Реагирование на колёсико мышки для поля длины реза
-        lengthInput.dataset.wheelArmed = '0';
-        lengthInput.addEventListener('mousedown', function() {
-            this.dataset.wheelArmed = '1';
-        });
-        lengthInput.addEventListener('blur', function() {
-            this.dataset.wheelArmed = '0';
-        });
-        lengthInput.addEventListener('wheel', function(event) {
-            if (this.dataset.wheelArmed !== '1') return;
-            event.preventDefault();
+            try {
+                const parsed = JSON.parse(raw);
+                nextCardId = typeof parsed.nextCardId === 'number' ? parsed.nextCardId : 1;
+                cardsState = Array.isArray(parsed.cardsState) && parsed.cardsState.length
+                    ? parsed.cardsState.slice(0, MAX_CARDS)
+                    : [defaultCardData()];
+            } catch (error) {
+                cardsState = [defaultCardData()];
+            }
+        }
 
-            const currentValue = parseFloat(String(this.value).replace(',', '.')) || 0;
-            const direction = event.deltaY > 0 ? -1 : 1; // вверх увеличивает, вниз уменьшает
-            const newValue = clampRoundLength(currentValue + (lengthStep * direction));
+        function getCardById(cardId) {
+            return cardsState.find(card => card.id === cardId);
+        }
 
-            this.value = newValue.toFixed(1);
-        });
+        function getField(cardElement, name) {
+            return cardElement.querySelector(`[data-field="${name}"]`);
+        }
 
-        function bindWheelStep(input, step, decimals) {
+        function getError(cardElement, name) {
+            return cardElement.querySelector(`[data-error="${name}"]`);
+        }
+
+        function getResultField(cardElement, name) {
+            return cardElement.querySelector(`[data-result="${name}"]`);
+        }
+
+        function populateMaterialOptions(selectElement, selectedValue = '') {
+            selectElement.innerHTML = '';
+            const firstOption = document.createElement('option');
+            firstOption.value = '';
+            firstOption.textContent = materialOptionsOrder.length === 0 ? 'Материалы не загружены' : 'Выберите материал...';
+            selectElement.appendChild(firstOption);
+
+            materialOptionsOrder.forEach(key => {
+                const material = materialsData[key];
+                if (!material) return;
+
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = material.name;
+                selectElement.appendChild(option);
+            });
+
+            if (selectedValue && materialsData[selectedValue]) {
+                selectElement.value = selectedValue;
+            }
+        }
+
+        function updateTariffs(cardElement) {
+            const materialValue = getField(cardElement, 'material').value;
+            const tariffSelect = getField(cardElement, 'tariff');
+
+            tariffSelect.innerHTML = '';
+
+            if (!materialValue || !materialsData[materialValue]) {
+                tariffSelect.innerHTML = '<option value="">Сначала выберите материал</option>';
+                return;
+            }
+
+            const material = materialsData[materialValue];
+            const firstOption = document.createElement('option');
+            firstOption.value = '';
+            firstOption.textContent = 'Выберите тариф...';
+            tariffSelect.appendChild(firstOption);
+
+            material.tariffs.forEach((tariff, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = `${tariff.name} - ${tariff.pricePerMeter} €/м`;
+                tariffSelect.appendChild(option);
+            });
+
+            selectTariffByQuantity(cardElement);
+        }
+
+        function selectTariffByQuantity(cardElement) {
+            const materialValue = getField(cardElement, 'material').value;
+            const quantity = parseInt(getField(cardElement, 'quantity').value, 10);
+            const tariffSelect = getField(cardElement, 'tariff');
+
+            if (!materialValue || Number.isNaN(quantity) || quantity < 1 || !materialsData[materialValue]) return;
+
+            const material = materialsData[materialValue];
+            let selectedIndex = material.tariffs.findIndex(tariff => quantity >= tariff.minQty);
+            if (selectedIndex === -1) {
+                selectedIndex = material.tariffs.length - 1;
+            }
+            tariffSelect.value = String(selectedIndex);
+        }
+
+        function clearErrors(cardElement) {
+            ['length', 'materialLength', 'materialWidth', 'quantity', 'material', 'tariff'].forEach(name => {
+                getError(cardElement, name).classList.remove('show');
+            });
+        }
+
+        function bindWheelStep(input, step, decimals, parser = parseFloat, formatter = value => value.toFixed(decimals), minimum = 0, onAfterChange = null) {
             input.dataset.wheelArmed = '0';
             input.addEventListener('mousedown', function() {
                 this.dataset.wheelArmed = '1';
@@ -933,29 +836,398 @@
 
             input.addEventListener('change', function() {
                 if (this.value === '') return;
-                const parsed = parseFloat(String(this.value).replace(',', '.'));
-                if (isNaN(parsed)) {
-                    this.value = '0';
-                    return;
+                const parsed = parser(String(this.value).replace(',', '.'));
+                if (Number.isNaN(parsed)) {
+                    this.value = formatter(minimum);
+                } else {
+                    const rounded = Math.round(parsed / step) * step;
+                    this.value = formatter(Math.max(minimum, rounded));
                 }
-                const rounded = Math.round(parsed / step) * step;
-                this.value = Math.max(0, rounded).toFixed(decimals);
+                if (onAfterChange) onAfterChange();
             });
 
             input.addEventListener('wheel', function(event) {
                 if (this.dataset.wheelArmed !== '1') return;
                 event.preventDefault();
-
-                const currentValue = parseFloat(String(this.value).replace(',', '.')) || 0;
-                const direction = event.deltaY > 0 ? -1 : 1; // вверх увеличивает, вниз уменьшает
-                const newValue = Math.max(0, currentValue + (step * direction));
-
-                this.value = newValue.toFixed(decimals);
+                const currentValue = parser(String(this.value).replace(',', '.'));
+                const safeCurrent = Number.isNaN(currentValue) ? minimum : currentValue;
+                const direction = event.deltaY > 0 ? -1 : 1;
+                const nextValue = Math.max(minimum, safeCurrent + (step * direction));
+                this.value = formatter(nextValue);
+                if (onAfterChange) onAfterChange();
             });
         }
 
-        bindWheelStep(document.getElementById('materialLength'), 10, 0);
-        bindWheelStep(document.getElementById('materialWidth'), 10, 0);
+        function renderOtherTariffs(container, material, selectedTariffIndex, length, engravePricePerItem, materialPricePerItem, quantity, perItem) {
+            container.innerHTML = '';
+            material.tariffs.forEach((tariff, index) => {
+                if (index === selectedTariffIndex) return;
+
+                const cuttingPricePerItem = length * tariff.pricePerMeter;
+                const pricePerItem = cuttingPricePerItem + engravePricePerItem + materialPricePerItem;
+                const value = perItem ? pricePerItem : pricePerItem * quantity;
+
+                const row = document.createElement('div');
+                row.className = 'tariff-item';
+                row.innerHTML = `<span class="tariff-item-label">${tariff.name}</span><span class="tariff-item-value">${value.toFixed(2)} €</span>`;
+                container.appendChild(row);
+            });
+        }
+
+        function renderCardResult(cardElement, result) {
+            const resultBlock = cardElement.querySelector('.result');
+            resultBlock.classList.add('show');
+
+            getResultField(cardElement, 'totalPrice').textContent = result.totalPrice.toFixed(2);
+            getResultField(cardElement, 'areaTotal').textContent = result.areaTotal.toFixed(3);
+            getResultField(cardElement, 'cuttingTotal').textContent = result.cuttingTotal.toFixed(2);
+            getResultField(cardElement, 'engraveTotal').textContent = result.engraveTotal.toFixed(2);
+            getResultField(cardElement, 'materialTotal').textContent = result.materialTotal.toFixed(2);
+            getResultField(cardElement, 'pricePerItem').textContent = result.pricePerItem.toFixed(2);
+            getResultField(cardElement, 'areaPerItem').textContent = result.areaPerItem.toFixed(3);
+            getResultField(cardElement, 'cuttingPerItem').textContent = result.cuttingPerItem.toFixed(2);
+            getResultField(cardElement, 'engravePerItem').textContent = result.engravePerItem.toFixed(2);
+            getResultField(cardElement, 'materialPerItem').textContent = result.materialPerItem.toFixed(2);
+
+            renderOtherTariffs(
+                getResultField(cardElement, 'otherTariffsTotal'),
+                result.material,
+                result.tariffIndex,
+                result.length,
+                result.engravePerItem,
+                result.materialPerItem,
+                result.quantity,
+                false
+            );
+            renderOtherTariffs(
+                getResultField(cardElement, 'otherTariffsPerItem'),
+                result.material,
+                result.tariffIndex,
+                result.length,
+                result.engravePerItem,
+                result.materialPerItem,
+                result.quantity,
+                true
+            );
+        }
+
+        function resetCardResult(cardElement) {
+            cardElement.querySelector('.result').classList.remove('show');
+            [
+                'totalPrice', 'areaTotal', 'cuttingTotal', 'engraveTotal', 'materialTotal',
+                'pricePerItem', 'areaPerItem', 'cuttingPerItem', 'engravePerItem', 'materialPerItem'
+            ].forEach(name => {
+                getResultField(cardElement, name).textContent = name.includes('area') ? '0.000' : '0.00';
+            });
+            getResultField(cardElement, 'otherTariffsTotal').innerHTML = '';
+            getResultField(cardElement, 'otherTariffsPerItem').innerHTML = '';
+        }
+
+        function calculateCard(cardElement) {
+            clearErrors(cardElement);
+
+            const length = parseFloat(getField(cardElement, 'length').value) || 0;
+            const materialLengthMm = parseFloat(getField(cardElement, 'materialLength').value) || 0;
+            const materialWidthMm = parseFloat(getField(cardElement, 'materialWidth').value) || 0;
+            const quantity = parseInt(getField(cardElement, 'quantity').value, 10);
+            const materialValue = getField(cardElement, 'material').value;
+            const tariffValue = getField(cardElement, 'tariff').value;
+
+            let hasError = false;
+
+            if (length <= 0) {
+                getError(cardElement, 'length').classList.add('show');
+                hasError = true;
+            }
+            if (materialLengthMm <= 0) {
+                getError(cardElement, 'materialLength').classList.add('show');
+                hasError = true;
+            }
+            if (materialWidthMm <= 0) {
+                getError(cardElement, 'materialWidth').classList.add('show');
+                hasError = true;
+            }
+            if (Number.isNaN(quantity) || quantity < 1) {
+                getError(cardElement, 'quantity').classList.add('show');
+                hasError = true;
+            }
+            if (!materialValue) {
+                getError(cardElement, 'material').classList.add('show');
+                hasError = true;
+            }
+
+            const material = materialsData[materialValue];
+            if (materialValue && (!material || typeof material.pricePerSqm !== 'number' || Number.isNaN(material.pricePerSqm))) {
+                getError(cardElement, 'material').classList.add('show');
+                hasError = true;
+            }
+
+            const tariffIndex = parseInt(tariffValue, 10);
+            if (tariffValue === '' || !material || !material.tariffs[tariffIndex]) {
+                getError(cardElement, 'tariff').classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) {
+                resetCardResult(cardElement);
+                const card = getCardById(Number(cardElement.dataset.cardId));
+                if (card) card.result = null;
+                updateOverallSummary();
+                saveState();
+                return;
+            }
+
+            const tariff = material.tariffs[tariffIndex];
+            const engraveMinutes = parseClockToMinutes(getField(cardElement, 'engraveTime').value);
+            const engravePricePerItem = (engraveMinutes / 60) * 30;
+            const materialArea = (materialLengthMm / 1000) * (materialWidthMm / 1000);
+            const materialPricePerItem = materialArea * 1.1 * material.pricePerSqm;
+            const cuttingPricePerItem = length * tariff.pricePerMeter;
+            const pricePerItem = cuttingPricePerItem + engravePricePerItem + materialPricePerItem;
+            const totalPrice = pricePerItem * quantity;
+
+            const result = {
+                material,
+                tariffIndex,
+                length,
+                quantity,
+                totalPrice,
+                pricePerItem,
+                areaTotal: materialArea * quantity,
+                areaPerItem: materialArea,
+                cuttingTotal: cuttingPricePerItem * quantity,
+                cuttingPerItem: cuttingPricePerItem,
+                engraveTotal: engravePricePerItem * quantity,
+                engravePerItem: engravePricePerItem,
+                materialTotal: materialPricePerItem * quantity,
+                materialPerItem: materialPricePerItem
+            };
+
+            renderCardResult(cardElement, result);
+            const card = getCardById(Number(cardElement.dataset.cardId));
+            if (card) card.result = result;
+            updateOverallSummary();
+            saveState();
+        }
+
+        function updateOverallSummary() {
+            const overallList = document.getElementById('overallList');
+            const overallTotalPrice = document.getElementById('overallTotalPrice');
+            const calculatedCards = cardsState.filter(card => card.result);
+
+            if (calculatedCards.length === 0) {
+                overallTotalPrice.textContent = '0.00';
+                overallList.innerHTML = `
+                    <div class="overall-item">
+                        <span class="overall-item-label">Пока нет рассчитанных блоков</span>
+                        <span class="overall-item-value">0.00 €</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const total = calculatedCards.reduce((sum, card) => sum + card.result.totalPrice, 0);
+            overallTotalPrice.textContent = total.toFixed(2);
+
+            overallList.innerHTML = '';
+            calculatedCards.forEach((card, index) => {
+                const row = document.createElement('div');
+                row.className = 'overall-item';
+                row.innerHTML = `<span class="overall-item-label">Блок ${index + 1}: ${card.result.material.name}</span><span class="overall-item-value">${card.result.totalPrice.toFixed(2)} €</span>`;
+                overallList.appendChild(row);
+            });
+        }
+
+        function syncCardStateFromDOM(cardElement) {
+            const card = getCardById(Number(cardElement.dataset.cardId));
+            if (!card) return;
+
+            ['length', 'engraveTime', 'materialLength', 'materialWidth', 'quantity', 'material', 'tariff'].forEach(field => {
+                card[field] = getField(cardElement, field).value;
+            });
+            saveState();
+        }
+
+        function attachCardEvents(cardElement) {
+            const cardId = Number(cardElement.dataset.cardId);
+            const quantityInput = getField(cardElement, 'quantity');
+            const materialSelect = getField(cardElement, 'material');
+            const tariffSelect = getField(cardElement, 'tariff');
+            const engraveInput = getField(cardElement, 'engraveTime');
+            const lengthInput = getField(cardElement, 'length');
+            const materialLengthInput = getField(cardElement, 'materialLength');
+            const materialWidthInput = getField(cardElement, 'materialWidth');
+
+            [lengthInput, engraveInput, materialLengthInput, materialWidthInput, quantityInput, materialSelect, tariffSelect].forEach(input => {
+                input.addEventListener('input', () => syncCardStateFromDOM(cardElement));
+                input.addEventListener('change', () => syncCardStateFromDOM(cardElement));
+            });
+
+            quantityInput.addEventListener('change', () => {
+                selectTariffByQuantity(cardElement);
+                syncCardStateFromDOM(cardElement);
+            });
+
+            materialSelect.addEventListener('change', () => {
+                updateTariffs(cardElement);
+                syncCardStateFromDOM(cardElement);
+            });
+
+            bindWheelStep(lengthInput, 0.1, 1, parseFloat, value => value.toFixed(1), 0);
+            bindWheelStep(materialLengthInput, 10, 0, parseFloat, value => value.toFixed(0), 0);
+            bindWheelStep(materialWidthInput, 10, 0, parseFloat, value => value.toFixed(0), 0);
+            bindWheelStep(quantityInput, 1, 0, value => parseInt(value, 10), value => String(Math.max(1, Math.round(value))), 1, () => {
+                selectTariffByQuantity(cardElement);
+                syncCardStateFromDOM(cardElement);
+            });
+
+            engraveInput.dataset.wheelArmed = '0';
+            engraveInput.addEventListener('mousedown', function() {
+                this.dataset.wheelArmed = '1';
+            });
+            engraveInput.addEventListener('blur', function() {
+                this.dataset.wheelArmed = '0';
+            });
+            engraveInput.addEventListener('change', function() {
+                const minutes = parseClockToMinutes(this.value);
+                this.value = formatMinutesToClock(minutes);
+                syncCardStateFromDOM(cardElement);
+            });
+            engraveInput.addEventListener('wheel', function(event) {
+                if (this.dataset.wheelArmed !== '1') return;
+                event.preventDefault();
+                const currentMinutes = parseClockToMinutes(this.value);
+                const direction = event.deltaY > 0 ? -1 : 1;
+                this.value = formatMinutesToClock(Math.max(0, currentMinutes + direction));
+                syncCardStateFromDOM(cardElement);
+            });
+
+            cardElement.querySelector('.calculate-btn').addEventListener('click', () => calculateCard(cardElement));
+            cardElement.querySelector('.reset-btn').addEventListener('click', () => resetCard(cardId));
+            cardElement.querySelector('.duplicate-btn').addEventListener('click', () => duplicateCard(cardId));
+            cardElement.querySelector('.remove-btn').addEventListener('click', () => removeCard(cardId));
+        }
+
+        function renderSingleCard(cardData, index) {
+            const template = document.getElementById('cardTemplate');
+            const cardElement = template.content.firstElementChild.cloneNode(true);
+            cardElement.dataset.cardId = String(cardData.id);
+            cardElement.querySelector('.card-number').textContent = `#${index + 1}`;
+
+            getField(cardElement, 'length').value = cardData.length;
+            getField(cardElement, 'engraveTime').value = cardData.engraveTime;
+            getField(cardElement, 'materialLength').value = cardData.materialLength;
+            getField(cardElement, 'materialWidth').value = cardData.materialWidth;
+            getField(cardElement, 'quantity').value = cardData.quantity;
+
+            populateMaterialOptions(getField(cardElement, 'material'), cardData.material);
+            updateTariffs(cardElement);
+            if (cardData.tariff !== '') {
+                getField(cardElement, 'tariff').value = cardData.tariff;
+            }
+
+            attachCardEvents(cardElement);
+
+            if (cardsState.length === 1) {
+                cardElement.querySelector('.remove-btn').disabled = true;
+                cardElement.querySelector('.remove-btn').style.opacity = '0.45';
+                cardElement.querySelector('.remove-btn').style.cursor = 'default';
+            }
+
+            if (cardData.result) {
+                renderCardResult(cardElement, cardData.result);
+            }
+
+            return cardElement;
+        }
+
+        function renderCards() {
+            const cardsContainer = document.getElementById('cards');
+            cardsContainer.innerHTML = '';
+
+            cardsState.forEach((card, index) => {
+                cardsContainer.appendChild(renderSingleCard(card, index));
+            });
+
+            document.getElementById('addCardButton').disabled = cardsState.length >= MAX_CARDS;
+            updateOverallSummary();
+        }
+
+        function addCard(prefill = null) {
+            if (cardsState.length >= MAX_CARDS) return;
+
+            const card = defaultCardData();
+            if (prefill) {
+                Object.assign(card, {
+                    length: prefill.length,
+                    engraveTime: prefill.engraveTime,
+                    materialLength: prefill.materialLength,
+                    materialWidth: prefill.materialWidth,
+                    quantity: prefill.quantity,
+                    material: prefill.material,
+                    tariff: prefill.tariff
+                });
+            }
+
+            cardsState.push(card);
+            renderCards();
+            saveState();
+        }
+
+        function duplicateCard(cardId) {
+            const source = getCardById(cardId);
+            if (!source || cardsState.length >= MAX_CARDS) return;
+            addCard(source);
+        }
+
+        function removeCard(cardId) {
+            if (cardsState.length <= 1) return;
+            cardsState = cardsState.filter(card => card.id !== cardId);
+            renderCards();
+            saveState();
+        }
+
+        function resetCard(cardId) {
+            const card = getCardById(cardId);
+            if (!card) return;
+
+            const fresh = defaultCardData();
+            card.length = fresh.length;
+            card.engraveTime = fresh.engraveTime;
+            card.materialLength = fresh.materialLength;
+            card.materialWidth = fresh.materialWidth;
+            card.quantity = fresh.quantity;
+            card.material = fresh.material;
+            card.tariff = fresh.tariff;
+            card.result = null;
+
+            renderCards();
+            saveState();
+        }
+
+        function resetAll() {
+            cardsState = [defaultCardData()];
+            localStorage.removeItem(STORAGE_KEY);
+            renderCards();
+            saveState();
+        }
+
+        document.addEventListener('keypress', function(event) {
+            if (event.key !== 'Enter') return;
+            const activeCard = event.target.closest('.card');
+            if (activeCard) {
+                calculateCard(activeCard);
+            }
+        });
+
+        document.getElementById('addCardButton').addEventListener('click', () => addCard());
+        document.getElementById('resetAllButton').addEventListener('click', resetAll);
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            loadState();
+            await loadMaterialsFromSheet();
+            renderCards();
+        });
     </script>
 </body>
 </html>
