@@ -98,7 +98,9 @@
 
         .cards {
             display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 20px;
+            align-items: start;
         }
 
         .card {
@@ -107,6 +109,7 @@
             border-radius: 20px;
             padding: 22px;
             box-shadow: 0 10px 30px rgba(255, 122, 0, 0.08);
+            height: 100%;
         }
 
         .card-head {
