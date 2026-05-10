@@ -43,6 +43,17 @@ const TEST_WORDS = [
 
 let db;
 
+// CORS middleware for cross-origin requests (needed for Railway deployment)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.resolve(__dirname)));
 
@@ -209,6 +220,29 @@ app.post("/api/admin/import-words", async (req, res) => {
   }
 });
 
+// Oxford Dictionaries pronunciation API
+function getOxfordPronunciationUrl(word) {
+  const lower = word.toLowerCase().trim();
+  if (!lower) return null;
+  // Handle words with spaces/phrases - use first word for pronunciation lookup
+  const firstWord = lower.split(/\s+/)[0];
+  const firstChar = firstWord[0];
+  const firstThree = firstWord.slice(0, 3);
+  const firstFive = firstWord.slice(0, 5);
+  // UK pronunciation format: /{char}/{first3}/{first5}/{word}__gb_1.mp3
+  return `https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/${firstChar}/${firstThree}/${firstFive}/${firstWord}__gb_1.mp3`;
+}
+
+// Just return the URL based on pattern, let client handle audio playback
+app.get("/api/pronounce/:word", (req, res) => {
+  const word = req.params.word;
+  if (!word) {
+    return res.status(400).json({ error: "Word is required" });
+  }
+  
+  const oxfordUrl = getOxfordPronunciationUrl(word);
+  res.json({ url: oxfordUrl, source: "oxford", word: word });
+});
 
 initDb()
   .then(() => {

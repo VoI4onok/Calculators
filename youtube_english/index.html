@@ -945,13 +945,60 @@
     }
 
 
-    function speakEnglish() {
+    let audioCache = {};
+
+    async function speakEnglish() {
       if (!state.current) return;
-      if (!("speechSynthesis" in window)) return;
-      const utterance = new SpeechSynthesisUtterance(state.current.en);
-      utterance.lang = "en-US";
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
+      
+      const word = state.current.en;
+      if (!word) return;
+      
+      // Check cache first
+      if (audioCache[word]) {
+        audioCache[word].play().catch(() => {});
+        return;
+      }
+      
+      try {
+        // Fetch pronunciation URL from server
+        const response = await fetch(`/api/pronounce/${encodeURIComponent(word)}`);
+        const data = await response.json();
+        
+        if (data.url) {
+          // Try to play Oxford pronunciation
+          const audio = new Audio(data.url);
+          audioCache[word] = audio;
+          
+          // Try to play, fallback to speech synthesis on error
+          try {
+            await audio.play();
+          } catch (playErr) {
+            // Oxford file not found, use fallback
+            if ("speechSynthesis" in window) {
+              const utterance = new SpeechSynthesisUtterance(word);
+              utterance.lang = "en-GB";
+              window.speechSynthesis.cancel();
+              window.speechSynthesis.speak(utterance);
+            }
+          }
+        } else {
+          // Fallback to Web Speech API
+          if ("speechSynthesis" in window) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = "en-GB";
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+          }
+        }
+      } catch (err) {
+        // Fallback to Web Speech API
+        if ("speechSynthesis" in window) {
+          const utterance = new SpeechSynthesisUtterance(word);
+          utterance.lang = "en-GB";
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(utterance);
+        }
+      }
     }
 
     async function handleDelete() {
