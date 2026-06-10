@@ -697,12 +697,12 @@
         const lidRailShort = lidT - (2 * railW); // 6 шт
 
         const totalPlywoodArea = (faceL * faceH * 2) + (sideH * sideT * 2) + (lidL * lidT * 2);
-        const plywoodAreaWithWaste = totalPlywoodArea * 1.1;
+        const plywoodAreaWithWaste = totalPlywoodArea * 1.3;
 
         const railTotalLength = (faceRailLong * 4) + (faceRailShort * 6) +
           (sideRailLong * 4) + (sideRailShort * 6) +
           (lidRailLong * 4) + (lidRailShort * 6);
-        const railLengthWithWaste = railTotalLength * 1.1;
+        const railLengthWithWaste = railTotalLength * 1.15;
         const railCost = railLengthWithWaste * railPricePerM;
 
         const plywoodPricePerM2 = sheetProductPrice;
@@ -751,13 +751,13 @@
             ${paintingName ? `<div class="cost-row"><div>Картина</div><div class="value-badge">${escapeHtml(paintingName)}</div></div>` : ''}
             <div class="cost-row">
               <div>Фанера</div>
-              <div class="value-badge tip" data-tip="Площадь: ${roundTo(totalPlywoodArea, 3)} м². С отходами 10%: ${roundTo(plywoodAreaWithWaste, 3)} м². Цена: ${roundTo(plywoodPricePerM2, 2)} €/м².">
+              <div class="value-badge tip" data-tip="Площадь: ${roundTo(totalPlywoodArea, 3)} м². С отходами 30%: ${roundTo(plywoodAreaWithWaste, 3)} м². Цена: ${roundTo(plywoodPricePerM2, 2)} €/м².">
                 ${roundTo(plywoodCost, 2)} €
               </div>
             </div>
             <div class="cost-row">
               <div>Рейки</div>
-              <div class="value-badge tip" data-tip="Длина: ${roundTo(railTotalLength, 2)} м. С отходами 10%: ${roundTo(railLengthWithWaste, 2)} м. Цена: ${roundTo(railPricePerM, 2)} €/м.">
+              <div class="value-badge tip" data-tip="Длина: ${roundTo(railTotalLength, 2)} м. С отходами 15%: ${roundTo(railLengthWithWaste, 2)} м. Цена: ${roundTo(railPricePerM, 2)} €/м.">
                 ${roundTo(railCost, 2)} €
               </div>
             </div>
