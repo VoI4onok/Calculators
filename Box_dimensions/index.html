@@ -409,21 +409,9 @@
                 <label for="sheetPricePerM2">Стоимость за м² (€)</label>
                 <input id="sheetPricePerM2" type="number" min="0" step="0.01" value="4.34" />
               </div>
+              
               <div>
-                <label for="sheetWidth">Формат листа, ширина (м)</label>
-                <input id="sheetWidth" type="number" min="0.01" step="0.01" value="1.25" />
-              </div>
-              <div>
-                <label for="sheetLength">Формат листа, длина (м)</label>
-                <input id="sheetLength" type="number" min="0.01" step="0.01" value="2.5" />
-              </div>
-              <div>
-                <label for="facadeSplit">Если фасад не помещается</label>
-                <select id="facadeSplit">
-                  <option value="1">Не делить</option>
-                  <option value="2">Делить на 2 части</option>
-                  <option value="3">Делить на 3 части</option>
-                </select>
+                <!-- facadeSplit moved to sheet layout block -->
               </div>
             </div>
           </div>
@@ -491,7 +479,27 @@
       <div class="full-width-section">
         <section class="card">
           <h2>Расстановка деталей на листе</h2>
-          <div id="sheetCutPreview" style="margin-top: 6px;"></div>
+          <div style="margin-top: 6px;">
+            <div class="row" style="margin-bottom:8px;">
+              <div>
+                <label for="sheetWidth">Формат листа, ширина (м)</label>
+                <input id="sheetWidth" type="number" min="0.01" step="0.01" value="1.25" />
+              </div>
+              <div>
+                <label for="sheetLength">Формат листа, длина (м)</label>
+                <input id="sheetLength" type="number" min="0.01" step="0.01" value="2.5" />
+              </div>
+              <div>
+                <label for="facadeSplit">Если фасад не помещается</label>
+                <select id="facadeSplit">
+                  <option value="1">Не делить</option>
+                  <option value="2">Делить на 2 части</option>
+                  <option value="3">Делить на 3 части</option>
+                </select>
+              </div>
+            </div>
+            <div id="sheetCutPreview"></div>
+          </div>
         </section>
       </div>
 
@@ -541,6 +549,8 @@
 
     <script>
       const el = (id) => document.getElementById(id);
+
+      window._clipboardPiece = window._clipboardPiece || null;
 
       const STORAGE_KEY = 'boxCalcStateV2';
       const LAYOUT_KEY = 'boxCalcSheetLayoutV1';
@@ -1206,17 +1216,36 @@
         function onPointerMove(e) {
           if (!dragId) return;
           const p = piecesById.get(dragId);
-          const svg = sheetsEls[dragSheetIndex];
-          const rect = svg.getBoundingClientRect();
-          const scale = parseFloat(svg.dataset.scale);
-          const pad = parseFloat(svg.dataset.pad);
-          const mx = (e.clientX - rect.left - pad) / scale;
-          const my = (e.clientY - rect.top - pad) / scale;
+          // determine which sheet svg is currently under the cursor
+          let targetSheet = dragSheetIndex;
+          let mx = 0;
+          let my = 0;
+          for (let i = 0; i < sheetsEls.length; i += 1) {
+            const s = sheetsEls[i];
+            const r = s.getBoundingClientRect();
+            if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+              targetSheet = i;
+              const scale = parseFloat(s.dataset.scale);
+              const pad = parseFloat(s.dataset.pad);
+              mx = (e.clientX - r.left - pad) / scale;
+              my = (e.clientY - r.top - pad) / scale;
+              break;
+            }
+          }
+          // fallback to original sheet if none found
+          const svg = sheetsEls[targetSheet] || sheetsEls[dragSheetIndex];
+          const scale = svg ? parseFloat(svg.dataset.scale) : 1;
+          const pad = svg ? parseFloat(svg.dataset.pad) : 0;
           const dispX = mx - dragStart.offsetX;
           const dispY = my - dragStart.offsetY;
           const dims = getPieceDims(p);
           p.y = dispX;
           p.x = sheet.w - dispY - dims.w;
+          // if moved over a different sheet, update piece's sheetIndex
+          if (targetSheet !== dragSheetIndex) {
+            p.sheetIndex = targetSheet;
+            dragSheetIndex = targetSheet;
+          }
 
           const sheetInfo = { w: sheet.w, h: sheet.h };
           const others = Array.from(piecesById.values()).filter((o) => o.id !== p.id && o.sheetIndex === dragSheetIndex);
@@ -1326,6 +1355,38 @@
           const key = e.key.toLowerCase();
           const isRotateKey = key === 'r' || key === 'к' || e.code === 'KeyR';
           const isDeleteKey = key === 'd' || key === 'в' || e.code === 'KeyD';
+          // Copy / Paste (Ctrl/Cmd+C, Ctrl/Cmd+V)
+          if ((e.ctrlKey || e.metaKey) && key === 'c') {
+            const id = dragId || selectedId;
+            if (id) {
+              const p = piecesById.get(id);
+              if (p) {
+                window._clipboardPiece = { type: p.type, w: p.w, h: p.h, rot: p.rot };
+              }
+              e.preventDefault();
+            }
+          }
+          if ((e.ctrlKey || e.metaKey) && key === 'v') {
+            if (window._clipboardPiece) {
+              const cp = window._clipboardPiece;
+              const targetSheet = selectedSheetIndex ?? 0;
+              const newPiece = {
+                id: `m${nextId++}`,
+                type: cp.type,
+                w: cp.w,
+                h: cp.h,
+                x: 0.02,
+                y: 0.02,
+                rot: cp.rot || false,
+                sheetIndex: targetSheet,
+              };
+              piecesById.set(newPiece.id, newPiece);
+              saveManual();
+              calc();
+              e.preventDefault();
+            }
+          }
+
           if (!isRotateKey && !isDeleteKey) return;
           const id = dragId || selectedId;
           const p = id ? piecesById.get(id) : null;
