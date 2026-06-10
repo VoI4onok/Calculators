@@ -73,7 +73,7 @@
         font-weight: 600;
         margin-bottom: 6px;
       }
-      input[type="number"], select {
+      input[type="number"], input[type="text"], select {
         width: 100%;
         padding: 10px 12px;
         border-radius: 12px;
@@ -83,7 +83,7 @@
         font-size: 15px;
         transition: box-shadow 0.2s ease, border-color 0.2s ease;
       }
-      input[type="number"]:focus, select:focus {
+      input[type="number"]:focus, input[type="text"]:focus, select:focus {
         outline: none;
         border-color: var(--accent-2);
         box-shadow: var(--ring);
@@ -162,6 +162,20 @@
         border-radius: 12px;
         padding: 10px;
         margin-top: 8px;
+      }
+      .material-group {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+      .material-group:first-of-type {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+      .material-group h3 {
+        margin: 0 0 10px;
+        font-size: 16px;
       }
       a {
         color: #0b0b0b;
@@ -345,6 +359,10 @@
       <div class="grid">
         <section class="card">
           <h2>Размеры картины</h2>
+          <div style="margin-bottom: 12px;">
+            <label for="paintingName">Название картины</label>
+            <input id="paintingName" type="text" placeholder="Например: Весенний сад" />
+          </div>
           <div class="row">
             <div>
               <label for="length">Длина (м)</label>
@@ -379,45 +397,68 @@
         </section>
 
         <section class="card">
-          <h2>Выбор фанеры</h2>
-          <div class="row">
-            <div>
-              <label for="plywood">Толщина фанеры (мм)</label>
-              <input id="plywood" type="number" min="0.1" step="0.1" value="4" />
+          <h2>Выбор материалов</h2>
+          <div class="material-group">
+            <h3>Фанера</h3>
+            <div class="row">
+              <div>
+                <label for="plywood">Толщина (мм)</label>
+                <input id="plywood" type="number" min="0.1" step="0.1" value="8" />
+              </div>
+              <div>
+                <label for="sheetPricePerM2">Стоимость за м² (€)</label>
+                <input id="sheetPricePerM2" type="number" min="0" step="0.01" value="4.34" />
+              </div>
+              <div>
+                <label for="sheetWidth">Формат листа, ширина (м)</label>
+                <input id="sheetWidth" type="number" min="0.01" step="0.01" value="1.25" />
+              </div>
+              <div>
+                <label for="sheetLength">Формат листа, длина (м)</label>
+                <input id="sheetLength" type="number" min="0.01" step="0.01" value="2.5" />
+              </div>
+              <div>
+                <label for="facadeSplit">Если фасад не помещается</label>
+                <select id="facadeSplit">
+                  <option value="1">Не делить</option>
+                  <option value="2">Делить на 2 части</option>
+                  <option value="3">Делить на 3 части</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label for="sheetProduct">Материал и лист</label>
-              <select id="sheetProduct">
-                <option value="osb_large">OSB 1.25×2.5</option>
-                <option value="osb_small">OSB 0.83×1.25</option>
-                <option value="custom">Свой материал</option>
-              </select>
+          </div>
+          <div class="material-group">
+            <h3>Пенопласт</h3>
+            <div class="row">
+              <div>
+                <label for="foamWidth">Размер, ширина (м)</label>
+                <input id="foamWidth" type="number" min="0.01" step="0.01" value="0.5" />
+              </div>
+              <div>
+                <label for="foamLength">Размер, длина (м)</label>
+                <input id="foamLength" type="number" min="0.01" step="0.01" value="1.2" />
+              </div>
+              <div>
+                <label for="foamPricePerM2">Стоимость за м² (€)</label>
+                <input id="foamPricePerM2" type="number" min="0" step="0.01" value="1.62" />
+              </div>
             </div>
-            <div>
-              <label for="bulkMode">Цена</label>
-              <select id="bulkMode">
-                <option value="retail">Обычная</option>
-                <option value="bulk">От 5 листов</option>
-              </select>
-            </div>
-            <div>
-              <label for="sheetPricePerM2">Цена материала (€/м²)</label>
-              <input id="sheetPricePerM2" type="number" min="0" step="0.01" value="3.91" />
-            </div>
-            <div>
-              <label for="facadeSplit">Если фасад не помещается</label>
-              <select id="facadeSplit">
-                <option value="1">Не делить</option>
-                <option value="2">Делить на 2 части</option>
-                <option value="3">Делить на 3 части</option>
-              </select>
-            </div>
-            <div>
-              <label for="foamType">Пенопласт (€/м²)</label>
-              <select id="foamType">
-                <option value="1.42">Белый — 1.42 €/м²</option>
-                <option value="1.98">Синий — 1.98 €/м²</option>
-              </select>
+          </div>
+          <div class="material-group">
+            <h3>Рейки</h3>
+            <div class="row">
+              <div>
+                <label for="railThicknessMm">Сечение, толщина (мм)</label>
+                <input id="railThicknessMm" type="number" min="0.1" step="0.1" value="15" />
+              </div>
+              <div>
+                <label for="railWidthMm">Сечение, ширина (мм)</label>
+                <input id="railWidthMm" type="number" min="0.1" step="0.1" value="30" />
+              </div>
+              <div>
+                <label for="railPricePerM">Стоимость за м (€)</label>
+                <input id="railPricePerM" type="number" min="0" step="0.01" value="0.9" />
+              </div>
             </div>
           </div>
         </section>
@@ -425,10 +466,8 @@
 
       <div class="grid" style="margin-top: 20px;">
         <section class="card">
-          <details class="help">
-            <summary>Формулы с подстановкой</summary>
-            <div id="formulaResult"></div>
-          </details>
+          <h2>Стоимость материалов и работы</h2>
+          <div id="costResult"></div>
         </section>
       </div>
 
@@ -449,74 +488,14 @@
         </section>
       </div>
 
+      <div class="full-width-section">
+        <section class="card">
+          <h2>Расстановка деталей на листе</h2>
+          <div id="sheetCutPreview" style="margin-top: 6px;"></div>
+        </section>
+      </div>
+
       <div class="grid" style="margin-top: 20px;">
-        <section class="card">
-          <h2>Стоимость материалов</h2>
-          <div id="costResult"></div>
-        </section>
-        <section class="card">
-          <h2>Цены и магазины</h2>
-          <details class="help">
-            <summary>Фанера / OSB</summary>
-            <table>
-              <thead>
-                <tr><th>Материал</th><th>Размер листа</th><th>Цена за лист</th><th>Цена за м²</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><a class="link-badge" href="https://online.depo.lv/product/660" target="_blank" rel="noreferrer">OSB 8 мм</a></td>
-                  <td>1.25 × 2.5 м</td>
-                  <td>12.21 € (от 5 шт: 11.81 €)</td>
-                  <td>3.91 € (от 5 шт: 3.78 €)</td>
-                </tr>
-                <tr>
-                  <td><a class="link-badge" href="https://online.depo.lv/product/191074" target="_blank" rel="noreferrer">OSB 8 мм (меньший лист)</a></td>
-                  <td>0.83 × 1.25 м</td>
-                  <td>5.25 € (от 5 шт: 4.42 €)</td>
-                  <td>5.06 € (от 5 шт: 4.26 €)</td>
-                </tr>
-              </tbody>
-            </table>
-            <p class="note">Цена за м² рассчитана по площади листа.</p>
-          </details>
-          <details class="help">
-            <summary>Пенопласт</summary>
-            <table>
-              <thead>
-                <tr><th>Материал</th><th>Размер</th><th>Цена</th><th>Ссылка</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Белый пенопласт</td>
-                  <td>0.5 × 1.2 × 0.02 м</td>
-                  <td>1.42 €/м²</td>
-                  <td><a class="link-badge" href="https://online.depo.lv/product/1982" target="_blank" rel="noreferrer">DEPO (белый)</a></td>
-                </tr>
-                <tr>
-                  <td>Синий пенопласт</td>
-                  <td>0.5 × 1.2 × 0.02 м</td>
-                  <td>1.98 €/м²</td>
-                  <td><a class="link-badge" href="https://online.depo.lv/product/2046" target="_blank" rel="noreferrer">DEPO (синий)</a></td>
-                </tr>
-              </tbody>
-            </table>
-          </details>
-          <details class="help">
-            <summary>Рейка</summary>
-            <table>
-              <thead>
-                <tr><th>Материал</th><th>Сечение</th><th>Цена</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Рейка</td>
-                  <td>15 × 30 мм</td>
-                  <td>0.86 €/м</td>
-                </tr>
-              </tbody>
-            </table>
-          </details>
-        </section>
         <section class="card">
           <h2>Пояснения (можно раскрыть)</h2>
           <details class="help">
@@ -525,7 +504,7 @@
           </details>
           <details class="help">
             <summary>Единицы измерения</summary>
-            <p class="note">Переключатель меняет все поля и результаты на м/см/мм.</p>
+            <p class="note">Размеры картины, листа и пенопласта вводятся в метрах. Толщина фанеры и сечение реек вводятся в миллиметрах.</p>
           </details>
           <details class="help">
             <summary>Пенопласт</summary>
@@ -537,26 +516,25 @@
           </details>
           <details class="help">
             <summary>Лист фанеры</summary>
-            <p class="note">Размер листа пока справочный, раскладку по листу не считаем.</p>
+            <p class="note">Формат листа используется в блоке расстановки деталей на листе.</p>
           </details>
           <details class="help">
             <summary>Рейки</summary>
-            <p class="note">Рейки: сечение 0.015 × 0.03 м. Для расчёта длины вычитаем ширину 0.03 м.</p>
-            <p class="note">На каждую сторону: 4 длинные по размеру стороны + 6 коротких по размеру стороны минус 2×0.03 м.</p>
+            <p class="note">Для расчёта коротких реек вычитается двойная ширина рейки.</p>
+            <p class="note">На каждую сторону: 4 длинные по размеру стороны + 6 коротких по размеру стороны минус 2 ширины рейки.</p>
             <p class="note">Поле «Вычесть из длины рейки (мм)» показывает дополнительное значение в скобках.</p>
           </details>
           <details class="help">
             <summary>Формулы</summary>
             <p class="note">Фасад = (L + 2*фанера + 2*рейка) × (H + 2*фанера + 2*рейка). Бок = H × T. Крышка = (L + 2*фанера + 2*рейка) × (T).</p>
-            <p class="note">Блок «Формулы с подстановкой» показывает промежуточные значения L', H', T' и итоговые размеры деталей.</p>
+            <p class="note">Объем для работы сотрудника = L × H × T, где L, H и T — исходные размеры картины.</p>
+            <p class="note">Пенопласт, фанера и рейки в стоимость работы не входят; они учитываются отдельно в стоимости материалов.</p>
+            <p class="note">Блок «Формулы с подстановкой» показывает промежуточные значения L', H', T', объем для работы и итоговые размеры деталей.</p>
           </details>
         </section>
-      </div>
-
-      <div class="full-width-section">
         <section class="card">
-          <h2>Расстановка деталей на листе</h2>
-          <div id="sheetCutPreview" style="margin-top: 6px;"></div>
+          <h2>Формулы с подстановкой</h2>
+          <div id="formulaResult"></div>
         </section>
       </div>
     </main>
@@ -564,30 +542,7 @@
     <script>
       const el = (id) => document.getElementById(id);
 
-      const SHEET_PRODUCTS = {
-        osb_large: {
-          name: 'OSB 1.25×2.5',
-          w: 1.25,
-          h: 2.5,
-          retail: 3.91,
-          bulk: 3.78,
-        },
-        osb_small: {
-          name: 'OSB 0.83×1.25',
-          w: 0.83,
-          h: 1.25,
-          retail: 5.06,
-          bulk: 4.26,
-        },
-        custom: {
-          name: 'Свой материал',
-          w: 1.25,
-          h: 2.5,
-          retail: 0,
-          bulk: 0,
-        },
-      };
-      const STORAGE_KEY = 'boxCalcStateV1';
+      const STORAGE_KEY = 'boxCalcStateV2';
       const LAYOUT_KEY = 'boxCalcSheetLayoutV1';
 
       function roundTo(n, digits) {
@@ -599,21 +554,20 @@
         return `${roundTo(meters, 3)}`;
       }
 
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function updateInputLabels() {
         el('length').previousElementSibling.textContent = 'Длина (м)';
         el('height').previousElementSibling.textContent = 'Высота (м)';
         el('thickness').previousElementSibling.textContent = 'Толщина (м)';
-        el('plywood').previousElementSibling.textContent = 'Толщина фанеры (мм)';
-      }
-
-      function syncSheetPriceInput() {
-        const product = SHEET_PRODUCTS[el('sheetProduct').value] || SHEET_PRODUCTS.osb_large;
-        const isCustom = el('sheetProduct').value === 'custom';
-        const price = el('bulkMode').value === 'bulk' ? product.bulk : product.retail;
-        if (!isCustom) {
-          el('sheetPricePerM2').value = roundTo(price, 2);
-        }
-        el('sheetPricePerM2').disabled = false;
+        el('plywood').previousElementSibling.textContent = 'Толщина (мм)';
       }
 
       function saveState(state) {
@@ -631,17 +585,23 @@
 
       function getCurrentStateFromInputs() {
         return {
+          paintingName: el('paintingName').value.trim(),
           length: parseFloat(el('length').value || 0),
           height: parseFloat(el('height').value || 0),
           thickness: parseFloat(el('thickness').value || 0),
           foam: el('foam').checked,
           plywoodMm: parseFloat(el('plywood').value || 0),
           railSubtractMm: parseFloat(el('railSubtractMm').value || 0),
-          sheetProduct: el('sheetProduct').value,
           sheetPricePerM2: parseFloat(el('sheetPricePerM2').value || 0),
-          bulkMode: el('bulkMode').value,
+          sheetWidth: parseFloat(el('sheetWidth').value || 0),
+          sheetLength: parseFloat(el('sheetLength').value || 0),
           facadeSplitCount: parseInt(el('facadeSplit').value || '2', 10),
-          foamType: parseFloat(el('foamType').value || 0),
+          foamWidth: parseFloat(el('foamWidth').value || 0),
+          foamLength: parseFloat(el('foamLength').value || 0),
+          foamPricePerM2: parseFloat(el('foamPricePerM2').value || 0),
+          railThicknessMm: parseFloat(el('railThicknessMm').value || 0),
+          railWidthMm: parseFloat(el('railWidthMm').value || 0),
+          railPricePerM: parseFloat(el('railPricePerM').value || 0),
         };
       }
 
@@ -687,6 +647,7 @@
       }
 
       function calc() {
+        const paintingName = el('paintingName').value.trim();
         const length = parseFloat(el('length').value || 0);
         const height = parseFloat(el('height').value || 0);
         const thickness = parseFloat(el('thickness').value || 0);
@@ -694,21 +655,20 @@
 
         const plyM = parseFloat(el('plywood').value || 0) / 1000;
 
-        const sheetProduct = el('sheetProduct').value;
-        const sheetMeta = SHEET_PRODUCTS[sheetProduct] || SHEET_PRODUCTS.osb_large;
         const sheetProductPrice = parseFloat(el('sheetPricePerM2').value || 0);
-        const sheetSize = { w: sheetMeta.w, h: sheetMeta.h };
-        const sheetW = sheetSize.w;
-        const sheetL = sheetSize.h;
-        const bulkMode = el('bulkMode').value;
+        const sheetW = parseFloat(el('sheetWidth').value || 0) || 1.25;
+        const sheetL = parseFloat(el('sheetLength').value || 0) || 2.5;
         const facadeSplitCount = parseInt(el('facadeSplit').value || '2', 10);
 
         const foamAdd = foam ? 0.04 : 0; // м
-        const railThk = 0.015; // 15 мм
-        const railW = 0.03; // 30 мм
+        const railThk = parseFloat(el('railThicknessMm').value || 0) / 1000;
+        const railW = parseFloat(el('railWidthMm').value || 0) / 1000;
         const railSubtractMm = parseFloat(el('railSubtractMm').value || 0);
         const railSubtractM = railSubtractMm / 1000;
-        const foamPricePerM2 = parseFloat(el('foamType').value || 0);
+        const foamPricePerM2 = parseFloat(el('foamPricePerM2').value || 0);
+        const foamSheetW = parseFloat(el('foamWidth').value || 0) || 0.5;
+        const foamSheetL = parseFloat(el('foamLength').value || 0) || 1.2;
+        const railPricePerM = parseFloat(el('railPricePerM').value || 0);
 
         const L = length + foamAdd;
         const H = height + foamAdd;
@@ -743,13 +703,32 @@
           (sideRailLong * 4) + (sideRailShort * 6) +
           (lidRailLong * 4) + (lidRailShort * 6);
         const railLengthWithWaste = railTotalLength * 1.1;
-        const railCost = railLengthWithWaste * 0.86;
+        const railCost = railLengthWithWaste * railPricePerM;
 
         const plywoodPricePerM2 = sheetProductPrice;
         const plywoodCost = plywoodAreaWithWaste * plywoodPricePerM2;
         const foamArea = 2 * (L * H + L * T + H * T);
         const foamAreaWithWaste = foamArea * 1.1;
         const foamCost = foam ? foamAreaWithWaste * foamPricePerM2 : 0;
+        const materialCost = plywoodCost + railCost + foamCost;
+        const workVolume = length * height * thickness;
+        let laborCost = 0;
+        let laborFormula = '';
+        let laborTariff = '';
+        if (workVolume < 0.03) {
+          laborCost = (150 * workVolume) + 22;
+          laborTariff = 'V < 0.03 м³';
+          laborFormula = `(150 × ${roundTo(workVolume, 6)}) + 22`;
+        } else if (workVolume <= 0.13) {
+          laborCost = (200 * workVolume) + 23;
+          laborTariff = '0.03 ≤ V ≤ 0.13 м³';
+          laborFormula = `(200 × ${roundTo(workVolume, 6)}) + 23`;
+        } else {
+          laborCost = (250 * workVolume) + 24;
+          laborTariff = 'V > 0.13 м³';
+          laborFormula = `(250 × ${roundTo(workVolume, 6)}) + 24`;
+        }
+        const grandTotal = materialCost + laborCost;
 
         const plywoodHtml = `
           <div class="soft-card">
@@ -769,6 +748,7 @@
 
         const costHtml = `
           <div class="soft-card">
+            ${paintingName ? `<div class="cost-row"><div>Картина</div><div class="value-badge">${escapeHtml(paintingName)}</div></div>` : ''}
             <div class="cost-row">
               <div>Фанера</div>
               <div class="value-badge tip" data-tip="Площадь: ${roundTo(totalPlywoodArea, 3)} м². С отходами 10%: ${roundTo(plywoodAreaWithWaste, 3)} м². Цена: ${roundTo(plywoodPricePerM2, 2)} €/м².">
@@ -777,7 +757,7 @@
             </div>
             <div class="cost-row">
               <div>Рейки</div>
-              <div class="value-badge tip" data-tip="Длина: ${roundTo(railTotalLength, 2)} м. С отходами 10%: ${roundTo(railLengthWithWaste, 2)} м. Цена: 0.86 €/м.">
+              <div class="value-badge tip" data-tip="Длина: ${roundTo(railTotalLength, 2)} м. С отходами 10%: ${roundTo(railLengthWithWaste, 2)} м. Цена: ${roundTo(railPricePerM, 2)} €/м.">
                 ${roundTo(railCost, 2)} €
               </div>
             </div>
@@ -790,12 +770,25 @@
               </div>
             ` : ''}
             <div class="cost-row">
-              <div><strong>Итого</strong></div>
+              <div><strong>Итого материалы</strong></div>
               <div class="value-badge tip" data-tip="Фанера + рейки + пенопласт.">
-                ${roundTo(plywoodCost + railCost + foamCost, 2)} €
+                ${roundTo(materialCost, 2)} €
+              </div>
+            </div>
+            <div class="cost-row">
+              <div>Работа сотрудника</div>
+              <div class="value-badge tip" data-tip="Объем: ${roundTo(workVolume, 6)} м³. Формула: ${laborFormula}.">
+                ${roundTo(laborCost, 2)} €
+              </div>
+            </div>
+            <div class="cost-row">
+              <div><strong>Итого материалы + работа</strong></div>
+              <div class="value-badge tip" data-tip="Материалы + работа сотрудника.">
+                ${roundTo(grandTotal, 2)} €
               </div>
             </div>
           </div>
+          <p class="note">Пенопласт считается по площади деталей. Формат листа пенопласта: <span class="value-badge">${formatValue(foamSheetW)} × ${formatValue(foamSheetL)} м</span>.</p>
         `;
 
         const railItems = [
@@ -868,6 +861,11 @@
                 <td>${formatValue(T)} м</td>
               </tr>
               <tr>
+                <td>Объем для работы</td>
+                <td>V = L × H × T = ${formatValue(length)} × ${formatValue(height)} × ${formatValue(thickness)}</td>
+                <td>${roundTo(workVolume, 6)} м³</td>
+              </tr>
+              <tr>
                 <td>Фасад (длина)</td>
                 <td>FaceL = L' + 2*P + 2*R</td>
                 <td>${formatValue(faceL)} м</td>
@@ -911,6 +909,21 @@
                 <td>Рейки Крышка (короткие)</td>
                 <td>LidShort = LidT - 2*RW</td>
                 <td>${formatValue(lidRailShort)} м</td>
+              </tr>
+              <tr>
+                <td>Материалы</td>
+                <td>${roundTo(plywoodCost, 2)} + ${roundTo(railCost, 2)}${foam ? ` + ${roundTo(foamCost, 2)}` : ''}</td>
+                <td>${roundTo(materialCost, 2)} €</td>
+              </tr>
+              <tr>
+                <td>Работа сотрудника</td>
+                <td>${laborTariff}: ${laborFormula}</td>
+                <td>${roundTo(laborCost, 2)} €</td>
+              </tr>
+              <tr>
+                <td>Материалы + работа</td>
+                <td>${roundTo(materialCost, 2)} + ${roundTo(laborCost, 2)}</td>
+                <td>${roundTo(grandTotal, 2)} €</td>
               </tr>
             </tbody>
           </table>
@@ -1340,35 +1353,46 @@
         }
 
         saveState({
+          paintingName: paintingName,
           length: length,
           height: height,
           thickness: thickness,
           foam: foam,
           plywoodMm: parseFloat(el('plywood').value || 0),
           railSubtractMm: railSubtractMm,
-          sheetProduct: sheetProduct,
           sheetPricePerM2: sheetProductPrice,
-          bulkMode: bulkMode,
+          sheetWidth: sheetW,
+          sheetLength: sheetL,
           facadeSplitCount: facadeSplitCount,
-          foamType: foamPricePerM2,
+          foamWidth: foamSheetW,
+          foamLength: foamSheetL,
+          foamPricePerM2: foamPricePerM2,
+          railThicknessMm: parseFloat(el('railThicknessMm').value || 0),
+          railWidthMm: parseFloat(el('railWidthMm').value || 0),
+          railPricePerM: railPricePerM,
         });
       }
 
       function setInputsFromState(state) {
         updateInputLabels();
 
+        el('paintingName').value = state.paintingName || '';
         el('length').value = roundTo(state.length || 0.6, 3);
         el('height').value = roundTo(state.height || 0.4, 3);
         el('thickness').value = roundTo(state.thickness || 0.04, 3);
         el('foam').checked = !!state.foam;
-        el('plywood').value = state.plywoodMm ?? 4;
+        el('plywood').value = state.plywoodMm ?? 8;
         el('railSubtractMm').value = state.railSubtractMm || 0;
-        el('sheetProduct').value = state.sheetProduct || 'osb_large';
-        el('sheetPricePerM2').value = state.sheetPricePerM2 ?? state.sheetProductPrice ?? 3.91;
-        el('bulkMode').value = state.bulkMode || 'retail';
+        el('sheetPricePerM2').value = state.sheetPricePerM2 ?? state.sheetProductPrice ?? 4.34;
+        el('sheetWidth').value = state.sheetWidth ?? 1.25;
+        el('sheetLength').value = state.sheetLength ?? 2.5;
         el('facadeSplit').value = String(state.facadeSplitCount || 2);
-        el('foamType').value = String(state.foamType || 1.42);
-        syncSheetPriceInput();
+        el('foamWidth').value = state.foamWidth ?? 0.5;
+        el('foamLength').value = state.foamLength ?? 1.2;
+        el('foamPricePerM2').value = state.foamPricePerM2 ?? state.foamType ?? 1.62;
+        el('railThicknessMm').value = state.railThicknessMm ?? 15;
+        el('railWidthMm').value = state.railWidthMm ?? 30;
+        el('railPricePerM').value = state.railPricePerM ?? 0.9;
       }
 
       function init() {
@@ -1424,33 +1448,47 @@
       el('calc').addEventListener('click', calc);
       el('reset').addEventListener('click', () => {
         updateInputLabels();
+        el('paintingName').value = '';
         el('length').value = 0.6;
         el('height').value = 0.4;
         el('thickness').value = 0.04;
         el('foam').checked = false;
-        el('plywood').value = 4;
-        el('sheetProduct').value = 'osb_large';
-        el('sheetPricePerM2').value = 3.91;
-        el('bulkMode').value = 'retail';
+        el('plywood').value = 8;
+        el('sheetPricePerM2').value = 4.34;
+        el('sheetWidth').value = 1.25;
+        el('sheetLength').value = 2.5;
         el('facadeSplit').value = '2';
-        el('foamType').value = '1.42';
+        el('foamWidth').value = 0.5;
+        el('foamLength').value = 1.2;
+        el('foamPricePerM2').value = 1.62;
+        el('railThicknessMm').value = 15;
+        el('railWidthMm').value = 30;
+        el('railPricePerM').value = 0.9;
         el('railSubtractMm').value = 0;
-        syncSheetPriceInput();
         calc();
       });
 
-      ['length', 'height', 'thickness', 'foam', 'plywood', 'railSubtractMm', 'sheetProduct', 'sheetPricePerM2', 'bulkMode', 'facadeSplit', 'foamType'].forEach((id) => {
+      [
+        'paintingName',
+        'length',
+        'height',
+        'thickness',
+        'foam',
+        'plywood',
+        'railSubtractMm',
+        'sheetPricePerM2',
+        'sheetWidth',
+        'sheetLength',
+        'facadeSplit',
+        'foamWidth',
+        'foamLength',
+        'foamPricePerM2',
+        'railThicknessMm',
+        'railWidthMm',
+        'railPricePerM',
+      ].forEach((id) => {
         el(id).addEventListener('input', calc);
         el(id).addEventListener('change', calc);
-      });
-
-      el('sheetProduct').addEventListener('change', () => {
-        syncSheetPriceInput();
-        calc();
-      });
-      el('bulkMode').addEventListener('change', () => {
-        syncSheetPriceInput();
-        calc();
       });
 
       el('exportBtn').addEventListener('click', () => {
@@ -1476,9 +1514,14 @@
         const sizeH = el('height').value || '0';
         const sizeT = el('thickness').value || '0';
         const safe = (v) => String(v).replace(/[^\d.,-]/g, '').replace(',', '.');
+        const safeName = el('paintingName').value.trim()
+          .replace(/[\\/:*?"<>|]+/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
         const sizeLabel = `${safe(sizeL)}x${safe(sizeH)}x${safe(sizeT)}m`;
         a.href = URL.createObjectURL(blob);
-        a.download = `box-${sizeLabel}-${ts}.json`;
+        a.download = `box-${safeName ? `${safeName}-` : ''}${sizeLabel}-${ts}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1516,6 +1559,15 @@
       addWheelStep('thickness', 0.01);
       addWheelStepFixed('plywood', 1);
       addWheelStepFixed('railSubtractMm', 1);
+      addWheelStepFixed('sheetPricePerM2', 0.01);
+      addWheelStep('sheetWidth', 0.01);
+      addWheelStep('sheetLength', 0.01);
+      addWheelStep('foamWidth', 0.01);
+      addWheelStep('foamLength', 0.01);
+      addWheelStepFixed('foamPricePerM2', 0.01);
+      addWheelStepFixed('railThicknessMm', 1);
+      addWheelStepFixed('railWidthMm', 1);
+      addWheelStepFixed('railPricePerM', 0.01);
 
       init();
     </script>
