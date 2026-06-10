@@ -1241,10 +1241,11 @@
           const dims = getPieceDims(p);
           p.y = dispX;
           p.x = sheet.w - dispY - dims.w;
-          // if moved over a different sheet, update piece's sheetIndex
+          // if moved over a different sheet, update piece's sheetIndex and re-render pieces so DOM moves to new svg
           if (targetSheet !== dragSheetIndex) {
             p.sheetIndex = targetSheet;
             dragSheetIndex = targetSheet;
+            renderPieces();
           }
 
           const sheetInfo = { w: sheet.w, h: sheet.h };
@@ -1282,7 +1283,12 @@
             e.preventDefault();
             const target = e.target;
             const group = target.closest('.piece');
-            if (!group) return;
+            // If clicked on empty area of the sheet, select this sheet
+            if (!group) {
+              selectedId = null;
+              selectedSheetIndex = idx;
+              return;
+            }
             const id = group.dataset.id;
             const p = piecesById.get(id);
             if (!p) return;
