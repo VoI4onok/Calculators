@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Каталог икон храма</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Православный храм</p>
+        <h1>Каталог икон</h1>
+      </div>
+      <div class="date-chip" id="todayLabel"></div>
+    </header>
+
+    <main class="layout">
+      <section class="focus-panel" aria-labelledby="weekTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Центральный аналой</p>
+            <h2 id="weekTitle">Ближайшая неделя</h2>
+          </div>
+          <button class="icon-button" id="refreshButton" type="button" title="Обновить данные">
+            <span aria-hidden="true">↻</span>
+            <span class="sr-only">Обновить данные</span>
+          </button>
+        </div>
+        <div class="week-strip" id="weekStrip"></div>
+      </section>
+
+      <section class="tools" aria-label="Настройки каталога">
+        <div class="field wide">
+          <label for="sheetUrl">CSV Google Таблицы</label>
+          <input id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
+        </div>
+        <button class="primary" id="loadSheetButton" type="button">Загрузить</button>
+        <button class="secondary" id="demoButton" type="button">Пример</button>
+      </section>
+
+      <section class="catalog-panel" aria-labelledby="catalogTitle">
+        <div class="section-head catalog-head">
+          <div>
+            <p class="eyebrow">Все иконы</p>
+            <h2 id="catalogTitle">Каталог</h2>
+          </div>
+          <div class="search-wrap">
+            <input id="searchInput" type="search" placeholder="Поиск">
+          </div>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="icon-grid" id="iconGrid"></div>
+      </section>
+    </main>
+
+    <template id="weekDayTemplate">
+      <article class="day-card">
+        <div class="day-date"></div>
+        <div class="day-name"></div>
+        <div class="day-icons"></div>
+      </article>
+    </template>
+
+    <template id="iconCardTemplate">
+      <article class="icon-card">
+        <div class="image-frame">
+          <img alt="" loading="lazy">
+        </div>
+        <div class="icon-body">
+          <div>
+            <h3></h3>
+            <p class="meta"></p>
+          </div>
+          <p class="notes"></p>
+          <div class="tags"></div>
+        </div>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
