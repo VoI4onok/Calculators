@@ -75,6 +75,12 @@
         .expense-row { display:grid; grid-template-columns:1fr 130px auto; gap:8px; margin-top:8px; align-items:center; }
         .expense-row button { padding:8px 10px; }
         .inline-note { color:var(--muted); font-size:13px; margin-top:8px; }
+        .employee-pay { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+        .employee-pay-head { display:flex; justify-content:space-between; gap:12px; font-weight:800; font-size:17px; }
+        .employee-pay-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:4px 14px; margin-top:10px; }
+        .employee-pay-item { display:flex; justify-content:space-between; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
+        .employee-pay-item label { display:flex; align-items:center; gap:7px; }
+        .employee-pay-item input { accent-color:var(--accent-solid); }
 
         .header-actions {
             display: flex;
@@ -499,7 +505,7 @@
             </div>
             <div class="service-row">
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="legs">Ножки</label><div class="service-fields" data-fields="legs"><div class="input-group"><label>Количество ножек</label><input type="number" min="0" data-value="legsCount" value="0"></div><div class="inline-note">0,20 € изготовление + 0,10 € установка = 0,30 € за штуку</div></div></div>
-                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="stencil">Трафарет</label><div class="inline-note">½ площади × цена берёзы 6 мм (<span data-cost="stencil">0.00</span> €/м²)</div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="stencil">Трафарет</label><div class="inline-note">½ площади × цена берёзы 6 мм (<span data-cost="stencil">0.00</span> €/м²) + 5,00 € за резку</div></div>
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="transport">Транспортировка</label><div class="service-fields" data-fields="transport"><div class="input-group"><label>Стоимость доставки, €</label><input type="number" min="0" step="0.01" data-value="transportCost" value="5"></div></div></div>
             </div>
             <h2 style="margin-top:20px">Доп. услуги</h2>
@@ -522,6 +528,11 @@
                     <span class="overall-item-value">0.00 €</span>
                 </div>
             </div>
+            <div class="employee-pay" id="employeePayPanel" style="display:none">
+                <div class="employee-pay-head"><span>Оплата работы сотруднику</span><span><span id="employeePayTotal">0.00</span> €</span></div>
+                <div class="inline-note">Отметь работы, выполненные сотрудником. Расчёт оплаты не меняет стоимость проекта для клиента.</div>
+                <div class="employee-pay-list" id="employeePayList"></div>
+            </div>
         </div>
 
         <div class="notice">
@@ -532,10 +543,11 @@
             <br>Итог за 1 изделие: резка + гравировка + материал.
             <br>Общая сумма блока: итог за 1 изделие × количество.
             <br>Ручной материал (комплексный проект): введённая общая стоимость / количество изделий; вместо цены из таблицы.
-            <br>Постобработка: скотч 3M = ½ общей площади × 14,50 €/м²; шлифовка = общая площадь × 5 €/м²; трафарет = ½ общей площади × цена берёзы 6 мм из таблицы.
+            <br>Постобработка: скотч 3M = ½ общей площади × 14,50 €/м²; шлифовка = общая площадь × 5 €/м²; трафарет = (½ общей площади × цена берёзы 6 мм из таблицы) + 5 € за резку.
             <br>Склейка клеем: мелкие × 0,25 € + большие × 1,00 €; склейка скотчем: мелкие × 0,10 € + большие × 1,00 €; масло: мелкие × 0,10 € + большие × 1,00 €.
             <br>Покраска = цвета × 10 € + ½ общей площади × 6 €; ножки = количество × 0,30 € (0,20 € изготовление + 0,10 € установка); транспортировка = введённая стоимость доставки.
             <br>Доп. услуги: макетирование = 10 €; дополнительные расходы = сумма введённых стоимостей.
+            <br>Оплата сотруднику: сумма включённых чекбоксами работ (шлифовка, виды склейки, площадь покраски без платы за цвета, масло, установка ножек по 0,10 €, макетирование, резка трафарета 5 €).
             <br>Общая стоимость проекта: сумма рассчитанных блоков + выбранные постобработки и доп. услуги.
         </div>
 
@@ -675,6 +687,8 @@
         let calculatorMode = 'standard';
         const serviceDefaults = { tape:false, sanding:false, gluing:false, tapeGluing:false, painting:false, oil:false, legs:false, stencil:false, transport:false, transportCost:'5', layout:false, expenses:false, glueSmall:'0', glueLarge:'0', tapeGlueSmall:'0', tapeGlueLarge:'0', colors:'0', oilSmall:'0', oilLarge:'0', legsCount:'0', expensesList:[{name:'',cost:'0'}] };
         const serviceState = { ...serviceDefaults };
+        const employeeTaskDefaults = { sanding:true, gluing:true, tapeGluing:true, painting:true, oil:true, legs:true, layout:true, stencil:true };
+        let employeeTaskState = { ...employeeTaskDefaults };
 
         function normalizeMaterialName(value) {
             return String(value || '')
@@ -887,7 +901,8 @@
                 nextCardId,
                 cardsState,
                 calculatorMode,
-                serviceState
+                serviceState,
+                employeeTaskState
             }));
         }
 
@@ -903,6 +918,7 @@
                 nextCardId = typeof parsed.nextCardId === 'number' ? parsed.nextCardId : 1;
                 calculatorMode = parsed.calculatorMode === 'complex' ? 'complex' : 'standard';
                 Object.assign(serviceState, serviceDefaults, parsed.serviceState || {});
+                employeeTaskState = { ...employeeTaskDefaults, ...(parsed.employeeTaskState || {}) };
                 cardsState = Array.isArray(parsed.cardsState) && parsed.cardsState.length
                     ? parsed.cardsState.slice(0, MAX_CARDS)
                     : [defaultCardData()];
@@ -1190,18 +1206,6 @@
             const overallList = document.getElementById('overallList');
             const overallTotalPrice = document.getElementById('overallTotalPrice');
             const calculatedCards = cardsState.filter(card => card.result);
-
-            if (calculatedCards.length === 0) {
-                overallTotalPrice.textContent = '0.00';
-                overallList.innerHTML = `
-                    <div class="overall-item">
-                        <span class="overall-item-label">Пока нет рассчитанных блоков</span>
-                        <span class="overall-item-value">0.00 €</span>
-                    </div>
-                `;
-                return;
-            }
-
             const baseTotal = calculatedCards.reduce((sum, card) => sum + card.result.totalPrice, 0);
             const projectArea = calculatedCards.reduce((sum, card) => sum + card.result.areaTotal, 0);
             const serviceTotal = calculatorMode === 'complex' ? calculateServices(projectArea) : 0;
@@ -1209,6 +1213,11 @@
             overallTotalPrice.textContent = total.toFixed(2);
 
             overallList.innerHTML = '';
+            if (calculatedCards.length === 0) {
+                const row = document.createElement('div'); row.className='overall-item';
+                row.innerHTML='<span class="overall-item-label">Пока нет рассчитанных блоков</span><span class="overall-item-value">0.00 €</span>';
+                overallList.appendChild(row);
+            }
             calculatedCards.forEach((card, index) => {
                 const row = document.createElement('div');
                 row.className = 'overall-item';
@@ -1224,6 +1233,25 @@
                     row.append(name, amount); overallList.appendChild(row);
                 });
             }
+            const employeePanel = document.getElementById('employeePayPanel');
+            employeePanel.style.display = calculatorMode === 'complex' ? 'block' : 'none';
+            const employeeLines = calculatorMode === 'complex' ? employeePayLineItems(projectArea) : {};
+            const employeeList = document.getElementById('employeePayList');
+            employeeList.innerHTML = '';
+            let employeeTotal = 0;
+            Object.entries(employeeLines).forEach(([key, item]) => {
+                const included = employeeTaskState[key] !== false;
+                if (included) employeeTotal += item.amount;
+                const row = document.createElement('div'); row.className='employee-pay-item';
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=included;
+                checkbox.addEventListener('change', () => { employeeTaskState[key]=checkbox.checked; updateOverallSummary(); saveState(); });
+                const text = document.createElement('span'); text.textContent=item.label;
+                label.append(checkbox,text);
+                const value = document.createElement('span'); value.textContent=`${item.amount.toFixed(2)} €`;
+                row.append(label,value); employeeList.appendChild(row);
+            });
+            document.getElementById('employeePayTotal').textContent=employeeTotal.toFixed(2);
         }
 
         function formatFieldValue(value, fallback = 'Не указано') {
@@ -1279,10 +1307,17 @@
             Object.entries(serviceLines).forEach(([label, value]) => lines.push(`${label}: ${value.toFixed(2)} €`));
             const total = baseTotal + Object.values(serviceLines).reduce((sum, value) => sum + value, 0);
             lines.push(`Общая стоимость проекта: ${total.toFixed(2)} €`);
+            if (calculatorMode === 'complex') {
+                const payrollItems = employeePayLineItems(projectArea);
+                const payroll = Object.entries(payrollItems).reduce((sum, [key, item]) => sum + (employeeTaskState[key] !== false ? item.amount : 0), 0);
+                lines.push(`Оплата работы сотруднику: ${payroll.toFixed(2)} €`);
+                lines.push(`Работы сотрудника: ${Object.entries(payrollItems).map(([key, item]) => `${item.label} — ${employeeTaskState[key] !== false ? 'включено' : 'исключено'}`).join('; ')}`);
+            }
             const snapshot = {
                 version: 1,
                 calculatorMode,
                 serviceState,
+                employeeTaskState,
                 cards: cardsState.map(card => ({
                     title: card.title, length: card.length, engraveTime: card.engraveTime,
                     materialLength: card.materialLength, materialWidth: card.materialWidth,
@@ -1412,12 +1447,14 @@
             if (imported.snapshot) {
                 calculatorMode = imported.snapshot.calculatorMode === 'complex' ? 'complex' : 'standard';
                 Object.assign(serviceState, serviceDefaults, imported.snapshot.serviceState || {});
+                employeeTaskState = { ...employeeTaskDefaults, ...(imported.snapshot.employeeTaskState || {}) };
                 serviceState.expensesList = Array.isArray(imported.snapshot.serviceState?.expensesList)
                     ? imported.snapshot.serviceState.expensesList.map(item => ({ name: String(item.name || ''), cost: String(item.cost ?? '0') }))
                     : [{name:'', cost:'0'}];
             } else {
                 calculatorMode = 'standard';
                 Object.assign(serviceState, serviceDefaults);
+                employeeTaskState = { ...employeeTaskDefaults };
                 serviceState.expensesList = [{name:'', cost:'0'}];
             }
 
@@ -1627,7 +1664,7 @@
             if (serviceState.painting) lines['Покраска'] = n('colors') * 10 + area / 2 * 6;
             if (serviceState.oil) lines['Покрытие маслом'] = n('oilSmall') * .1 + n('oilLarge');
             if (serviceState.legs) lines['Ножки'] = n('legsCount') * .3;
-            if (serviceState.stencil) lines['Трафарет'] = area / 2 * birchPrice;
+            if (serviceState.stencil) lines['Трафарет'] = area / 2 * birchPrice + 5;
             if (serviceState.transport) lines['Транспортировка'] = n('transportCost');
             if (serviceState.layout) lines['Макетирование'] = 10;
             if (serviceState.expenses) (serviceState.expensesList || []).forEach((item, index) => {
@@ -1644,6 +1681,19 @@
             return material && typeof material.pricePerSqm === 'number' ? material.pricePerSqm : 0;
         }
         function calculateServices(area) { return Object.values(serviceLineItems(area)).reduce((sum, value) => sum + value, 0); }
+        function employeePayLineItems(area) {
+            const n = key => Math.max(0, parseFloat(serviceState[key]) || 0);
+            return {
+                sanding: { label:'Шлифовка', amount:serviceState.sanding ? area * 5 : 0 },
+                gluing: { label:'Склейка клеем', amount:serviceState.gluing ? n('glueSmall') * .25 + n('glueLarge') : 0 },
+                tapeGluing: { label:'Склейка скотчем', amount:serviceState.tapeGluing ? n('tapeGlueSmall') * .1 + n('tapeGlueLarge') : 0 },
+                painting: { label:'Покраска — работа (без оплаты за цвета)', amount:serviceState.painting ? area / 2 * 6 : 0 },
+                oil: { label:'Покрытие маслом', amount:serviceState.oil ? n('oilSmall') * .1 + n('oilLarge') : 0 },
+                legs: { label:'Установка ножек', amount:serviceState.legs ? n('legsCount') * .1 : 0 },
+                layout: { label:'Макетирование', amount:serviceState.layout ? 10 : 0 },
+                stencil: { label:'Работа по резке трафарета', amount:serviceState.stencil ? 5 : 0 }
+            };
+        }
         function refreshServiceUI() {
             document.querySelectorAll('[data-service]').forEach(input => {
                 input.checked = Boolean(serviceState[input.dataset.service]);
@@ -1737,6 +1787,7 @@
             calculatorMode = 'standard';
             Object.assign(serviceState, serviceDefaults);
             serviceState.expensesList = [{name:'',cost:'0'}];
+            employeeTaskState = { ...employeeTaskDefaults };
             localStorage.removeItem(STORAGE_KEY);
             renderCards();
             setCalculatorMode('standard');
