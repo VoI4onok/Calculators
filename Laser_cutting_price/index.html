@@ -495,7 +495,7 @@
             <h2>Постобработка</h2>
             <div class="service-row">
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="gluing">Склейка клеем</label><div class="service-fields" data-fields="gluing"><div class="input-row"><div class="input-group"><label>Мелкие элементы</label><input type="number" min="0" data-value="glueSmall" value="0"></div><div class="input-group"><label>Большие элементы</label><input type="number" min="0" data-value="glueLarge" value="0"></div></div></div></div>
-                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="sanding">Шлифовка</label><div class="inline-note">Площадь × 5,00 €/м² · <span data-cost="sanding">0.00</span> €</div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="sanding">Шлифовка</label><div class="inline-note">Площадь × 2,50 €/м² · <span data-cost="sanding">0.00</span> €</div></div>
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="oil">Покрытие маслом</label><div class="service-fields" data-fields="oil"><div class="input-row"><div class="input-group"><label>Мелкие элементы</label><input type="number" min="0" data-value="oilSmall" value="0"></div><div class="input-group"><label>Большие элементы</label><input type="number" min="0" data-value="oilLarge" value="0"></div></div></div></div>
             </div>
             <div class="service-row">
@@ -504,7 +504,7 @@
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="painting">Покраска</label><div class="service-fields" data-fields="painting"><div class="input-group"><label>Количество цветов</label><input type="number" min="0" data-value="colors" value="0"></div><div class="inline-note">За площадь (½ площади × 6 €): <span data-cost="paintArea">0.00</span> €</div></div></div>
             </div>
             <div class="service-row">
-                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="legs">Ножки</label><div class="service-fields" data-fields="legs"><div class="input-group"><label>Количество ножек</label><input type="number" min="0" data-value="legsCount" value="0"></div><div class="inline-note">0,20 € изготовление + 0,10 € установка = 0,30 € за штуку</div></div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="legs">Ножки</label><div class="service-fields" data-fields="legs"><div class="input-group"><label>Количество ножек</label><input type="number" min="0" data-value="legsCount" value="0"></div><div class="inline-note">0,20 € изготовление + 0,30 € установка = 0,50 € за штуку</div></div></div>
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="stencil">Трафарет</label><div class="inline-note">½ площади × цена берёзы 6 мм (<span data-cost="stencil">0.00</span> €/м²) + 5,00 € за резку</div></div>
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="transport">Транспортировка</label><div class="service-fields" data-fields="transport"><div class="input-group"><label>Стоимость доставки, €</label><input type="number" min="0" step="0.01" data-value="transportCost" value="5"></div></div></div>
             </div>
@@ -543,9 +543,9 @@
             <br>Итог за 1 изделие: резка + гравировка + материал.
             <br>Общая сумма блока: итог за 1 изделие × количество.
             <br>Ручной материал (комплексный проект): введённая общая стоимость / количество изделий; вместо цены из таблицы.
-            <br>Постобработка: скотч 3M = ½ общей площади × 14,50 €/м²; шлифовка = общая площадь × 5 €/м²; трафарет = (½ общей площади × цена берёзы 6 мм из таблицы) + 5 € за резку.
+            <br>Постобработка: скотч 3M = ½ общей площади × 14,50 €/м²; шлифовка = общая площадь × 2,50 €/м²; трафарет = (½ общей площади × цена берёзы 6 мм из таблицы) + 5 € за резку.
             <br>Склейка клеем и скотчем: мелкие × 0,25 € + большие × 1,00 €; масло: мелкие × 0,10 € + большие × 1,00 €.
-            <br>Покраска = цвета × 10 € + ½ общей площади × 6 €; ножки = количество × 0,30 € (0,20 € изготовление + 0,10 € установка); транспортировка = введённая стоимость доставки.
+            <br>Покраска = цвета × 10 € + ½ общей площади × 6 €; ножки = количество × 0,50 € (0,20 € изготовление + 0,30 € установка); транспортировка = введённая стоимость доставки.
             <br>Доп. услуги: макетирование = 10 €; дополнительные расходы = сумма введённых стоимостей.
             <br>Оплата сотруднику: сумма включённых чекбоксами работ плюс 30% стоимости лазерной резки без материала. Склейка скотчем: мелкие × 0,25 € + большие × 1,00 €; резка станком считается отдельно от материала.
             <br>Общая стоимость проекта: сумма рассчитанных блоков + выбранные постобработки и доп. услуги.
@@ -1660,7 +1660,7 @@
             const birchPrice = birch6Price();
             const lines = {};
             if (serviceState.tape) lines['Скотч 3M'] = area / 2 * 14.5;
-            if (serviceState.sanding) lines['Шлифовка'] = area * 5;
+            if (serviceState.sanding) lines['Шлифовка'] = area * 2.5;
             if (serviceState.gluing) lines['Склейка клеем'] = n('glueSmall') * .25 + n('glueLarge');
             if (serviceState.tapeGluing) lines['Склейка скотчем'] = n('tapeGlueSmall') * .25 + n('tapeGlueLarge');
             if (serviceState.painting) lines['Покраска'] = n('colors') * 10 + area / 2 * 6;
@@ -1687,12 +1687,12 @@
             const n = key => Math.max(0, parseFloat(serviceState[key]) || 0);
             return {
                 machineCutting: { label:'Резка на станке (30%)', amount:Math.max(0, cuttingTotal) * .3 },
-                sanding: { label:'Шлифовка', amount:serviceState.sanding ? area * 5 : 0 },
+                sanding: { label:'Шлифовка', amount:serviceState.sanding ? area * 2.5 : 0 },
                 gluing: { label:'Склейка клеем', amount:serviceState.gluing ? n('glueSmall') * .25 + n('glueLarge') : 0 },
                 tapeGluing: { label:'Склейка скотчем', amount:serviceState.tapeGluing ? n('tapeGlueSmall') * .25 + n('tapeGlueLarge') : 0 },
                 painting: { label:'Покраска — работа (без оплаты за цвета)', amount:serviceState.painting ? area / 2 * 6 : 0 },
                 oil: { label:'Покрытие маслом', amount:serviceState.oil ? n('oilSmall') * .1 + n('oilLarge') : 0 },
-                legs: { label:'Установка ножек', amount:serviceState.legs ? n('legsCount') * .1 : 0 },
+                legs: { label:'Установка ножек', amount:serviceState.legs ? n('legsCount') * .3 : 0 },
                 layout: { label:'Макетирование', amount:serviceState.layout ? 10 : 0 },
                 stencil: { label:'Работа по резке трафарета', amount:serviceState.stencil ? 5 : 0 }
             };
@@ -1720,7 +1720,7 @@
             }
             const area = cardsState.reduce((sum, card) => sum + (card.result?.areaTotal || 0), 0);
             document.querySelector('[data-cost="tape"]').textContent=(area / 2 * 14.5).toFixed(2);
-            document.querySelector('[data-cost="sanding"]').textContent=(area * 5).toFixed(2);
+            document.querySelector('[data-cost="sanding"]').textContent=(area * 2.5).toFixed(2);
             document.querySelector('[data-cost="paintArea"]').textContent=(area / 2 * 6).toFixed(2);
             document.querySelector('[data-cost="stencil"]').textContent=birch6Price().toFixed(2);
         }
