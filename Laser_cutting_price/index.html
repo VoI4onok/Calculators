@@ -55,6 +55,26 @@
             margin-bottom: 0;
         }
 
+        .mode-picker { position: relative; }
+        .mode-trigger { border: 0; background: transparent; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+        .mode-menu { position: absolute; z-index: 5; top: calc(100% + 8px); left: 0; min-width: 240px; padding: 6px; border-radius: 12px; background: #fff; box-shadow: 0 10px 30px #0002; display: none; }
+        .mode-menu.open { display: grid; }
+        .mode-option { text-align: left; background: #fff; color: var(--text); }
+        .mode-option[aria-checked="true"] { background: #fff1e3; color: var(--accent-solid); }
+        .complex-panel { display:none; margin-top:22px; padding:22px; border-radius:18px; background:#fffaf4; border:1px solid rgba(255,122,0,.16); }
+        .complex-panel.show { display:block; }
+        .complex-panel h2 { font-size:20px; margin-bottom:14px; }
+        .service-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+        .service-card { background:white; border:1px solid var(--line); border-radius:14px; padding:14px; }
+        .check-label { display:flex!important; align-items:center; gap:9px; margin-bottom:10px!important; }
+        .check-label input { width:18px; height:18px; accent-color:var(--accent-solid); }
+        .service-fields { display:none; padding-top:8px; }
+        .service-fields.show { display:block; }
+        .service-fields .input-row { margin: 10px 0 0; gap:10px; }
+        .expense-row { display:grid; grid-template-columns:1fr 130px auto; gap:8px; margin-top:8px; align-items:center; }
+        .expense-row button { padding:8px 10px; }
+        .inline-note { color:var(--muted); font-size:13px; margin-top:8px; }
+
         .header-actions {
             display: flex;
             gap: 12px;
@@ -447,7 +467,13 @@
     <div class="container">
         <div class="header">
             <div class="header-copy">
-                <h1>✂ Лазерная резка</h1>
+                <div class="mode-picker">
+                    <button type="button" class="mode-trigger" id="modeTrigger" aria-haspopup="true" aria-expanded="false"><h1>✂ <span id="modeTitle">Лазерная резка</span> ▾</h1></button>
+                    <div class="mode-menu" id="modeMenu" role="radiogroup" aria-label="Режим калькулятора">
+                        <button type="button" class="mode-option" data-mode="standard" role="radio" aria-checked="true">Лазерная резка</button>
+                        <button type="button" class="mode-option" data-mode="complex" role="radio" aria-checked="false">Комплексный проект</button>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
                 <button type="button" class="accent-btn" id="addCardButton">+ Добавить материал</button>
@@ -457,6 +483,22 @@
         </div>
 
         <div class="top-status" id="actionStatus"></div>
+        <section class="complex-panel" id="complexPanel">
+            <h2>Постобработка</h2>
+            <div class="service-grid">
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="tape">Скотч 3M</label><div class="inline-note">Половина площади × 14,50 €/м² · <span data-cost="tape">0.00</span> €</div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="sanding">Шлифовка</label><div class="inline-note">Площадь × 5,00 €/м² · <span data-cost="sanding">0.00</span> €</div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="gluing">Склейка</label><div class="service-fields" data-fields="gluing"><div class="input-row"><div class="input-group"><label>Мелкие элементы</label><input type="number" min="0" data-value="glueSmall" value="0"></div><div class="input-group"><label>Большие элементы</label><input type="number" min="0" data-value="glueLarge" value="0"></div></div></div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="painting">Покраска</label><div class="service-fields" data-fields="painting"><div class="input-group"><label>Количество цветов</label><input type="number" min="0" data-value="colors" value="0"></div><div class="inline-note">За площадь (½ площади × 6 €): <span data-cost="paintArea">0.00</span> €</div></div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="oil">Покрытие маслом</label><div class="service-fields" data-fields="oil"><div class="input-row"><div class="input-group"><label>Мелкие элементы</label><input type="number" min="0" data-value="oilSmall" value="0"></div><div class="input-group"><label>Большие элементы</label><input type="number" min="0" data-value="oilLarge" value="0"></div></div></div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="legs">Установка ножек</label><div class="service-fields" data-fields="legs"><div class="input-group"><label>Количество ножек</label><input type="number" min="0" data-value="legsCount" value="0"></div></div></div>
+            </div>
+            <h2 style="margin-top:20px">Доп. услуги</h2>
+            <div class="service-grid">
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="layout">Макетирование</label><div class="inline-note">Фиксированно 10,00 €</div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="expenses">Дополнительные расходы</label><div class="service-fields" data-fields="expenses"><div id="expenseRows"></div><button type="button" class="ghost-btn" id="addExpenseButton">+ Добавить еще</button></div></div>
+            </div>
+        </section>
         <div class="status" id="materialLoadStatus">Загрузка материалов...</div>
         <div class="cards" id="cards"></div>
 
@@ -535,6 +577,12 @@
                 </div>
             </div>
 
+            <div class="input-row single complex-only" style="display:none">
+                <div class="input-group"><label class="check-label"><input type="checkbox" data-field="manualMaterial">Ввести стоимость материала вручную</label>
+                    <div class="service-fields" data-fields="manualMaterial"><label>Общая стоимость материала, €</label><input type="number" data-field="manualMaterialCost" min="0" step="0.01" value="0"></div>
+                </div>
+            </div>
+
             <div class="input-row">
                 <div class="input-group">
                     <label>Количество изделий</label>
@@ -610,6 +658,8 @@
         let materialOptionsOrder = [];
         let cardsState = [];
         let nextCardId = 1;
+        let calculatorMode = 'standard';
+        const serviceState = { tape:false, sanding:false, gluing:false, painting:false, oil:false, legs:false, layout:false, expenses:false, glueSmall:'0', glueLarge:'0', colors:'0', oilSmall:'0', oilLarge:'0', legsCount:'0', expensesList:[{name:'',cost:'0'}] };
 
         function normalizeMaterialName(value) {
             return String(value || '')
@@ -811,6 +861,8 @@
                 quantity: '1',
                 material: '',
                 tariff: '',
+                manualMaterial: false,
+                manualMaterialCost: '0',
                 result: null
             };
         }
@@ -818,7 +870,9 @@
         function saveState() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 nextCardId,
-                cardsState
+                cardsState,
+                calculatorMode,
+                serviceState
             }));
         }
 
@@ -832,6 +886,8 @@
             try {
                 const parsed = JSON.parse(raw);
                 nextCardId = typeof parsed.nextCardId === 'number' ? parsed.nextCardId : 1;
+                calculatorMode = parsed.calculatorMode === 'complex' ? 'complex' : 'standard';
+                Object.assign(serviceState, parsed.serviceState || {});
                 cardsState = Array.isArray(parsed.cardsState) && parsed.cardsState.length
                     ? parsed.cardsState.slice(0, MAX_CARDS)
                     : [defaultCardData()];
@@ -1052,13 +1108,15 @@
                 getError(cardElement, 'quantity').classList.add('show');
                 hasError = true;
             }
+            const manualMaterial = calculatorMode === 'complex' && getField(cardElement, 'manualMaterial').checked;
+            const manualCost = Math.max(0, parseFloat(getField(cardElement, 'manualMaterialCost').value) || 0);
             if (!materialValue) {
                 getError(cardElement, 'material').classList.add('show');
                 hasError = true;
             }
 
             const material = materialsData[materialValue];
-            if (materialValue && (!material || typeof material.pricePerSqm !== 'number' || Number.isNaN(material.pricePerSqm))) {
+            if (materialValue && !manualMaterial && (!material || typeof material.pricePerSqm !== 'number' || Number.isNaN(material.pricePerSqm))) {
                 getError(cardElement, 'material').classList.add('show');
                 hasError = true;
             }
@@ -1082,7 +1140,7 @@
             const engraveMinutes = parseClockToMinutes(getField(cardElement, 'engraveTime').value);
             const engravePricePerItem = (engraveMinutes / 60) * 30;
             const materialArea = (materialLengthMm / 1000) * (materialWidthMm / 1000);
-            const materialPricePerItem = materialArea * 1.1 * material.pricePerSqm;
+            const materialPricePerItem = manualMaterial ? manualCost / quantity : materialArea * 1.1 * material.pricePerSqm;
             const cuttingPricePerItem = length * tariff.pricePerMeter;
             const pricePerItem = cuttingPricePerItem + engravePricePerItem + materialPricePerItem;
             const totalPrice = pricePerItem * quantity;
@@ -1102,11 +1160,13 @@
                 engravePerItem: engravePricePerItem,
                 materialTotal: materialPricePerItem * quantity,
                 materialPerItem: materialPricePerItem
+                ,manualMaterial
             };
 
             renderCardResult(cardElement, result);
             const card = getCardById(Number(cardElement.dataset.cardId));
             if (card) card.result = result;
+            if (card) { card.manualMaterial = manualMaterial; card.manualMaterialCost = String(manualCost); }
             updateOverallSummary();
             saveState();
         }
@@ -1127,7 +1187,10 @@
                 return;
             }
 
-            const total = calculatedCards.reduce((sum, card) => sum + card.result.totalPrice, 0);
+            const baseTotal = calculatedCards.reduce((sum, card) => sum + card.result.totalPrice, 0);
+            const projectArea = calculatedCards.reduce((sum, card) => sum + card.result.areaTotal, 0);
+            const serviceTotal = calculatorMode === 'complex' ? calculateServices(projectArea) : 0;
+            const total = baseTotal + serviceTotal;
             overallTotalPrice.textContent = total.toFixed(2);
 
             overallList.innerHTML = '';
@@ -1137,6 +1200,15 @@
                 row.innerHTML = `<span class="overall-item-label">${getCardTitle(card, index)}: ${card.result.material.name}</span><span class="overall-item-value">${card.result.totalPrice.toFixed(2)} €</span>`;
                 overallList.appendChild(row);
             });
+            if (calculatorMode === 'complex') {
+                Object.entries(serviceLineItems(projectArea)).forEach(([label, value]) => {
+                    if (value <= 0) return;
+                    const row = document.createElement('div'); row.className = 'overall-item';
+                    const name = document.createElement('span'); name.className = 'overall-item-label'; name.textContent = label;
+                    const amount = document.createElement('span'); amount.className = 'overall-item-value'; amount.textContent = `${value.toFixed(2)} €`;
+                    row.append(name, amount); overallList.appendChild(row);
+                });
+            }
         }
 
         function formatFieldValue(value, fallback = 'Не указано') {
@@ -1168,6 +1240,7 @@
 
                 lines.push(`${title}`);
                 lines.push(`Материал: ${material ? material.name : 'Не выбран'}`);
+                if (calculatorMode === 'complex' && card.manualMaterial) lines.push(`Стоимость материала вручную: ${formatFieldValue(card.manualMaterialCost, '0')} €`);
                 lines.push(`Тариф: ${tariff ? `${tariff.name} - ${tariff.pricePerMeter} €/м` : 'Не выбран'}`);
                 lines.push(`Длина реза: ${formatFieldValue(card.length, '0')} м`);
                 lines.push(`Время гравировки: ${formatFieldValue(card.engraveTime, '00:00')}`);
@@ -1185,7 +1258,11 @@
                 lines.push('');
             });
 
-            const total = cardsState.reduce((sum, card) => sum + (card.result ? card.result.totalPrice : 0), 0);
+            const projectArea = cardsState.reduce((sum, card) => sum + (card.result ? card.result.areaTotal : 0), 0);
+            const baseTotal = cardsState.reduce((sum, card) => sum + (card.result ? card.result.totalPrice : 0), 0);
+            const serviceLines = calculatorMode === 'complex' ? serviceLineItems(projectArea) : {};
+            Object.entries(serviceLines).forEach(([label, value]) => lines.push(`${label}: ${value.toFixed(2)} €`));
+            const total = baseTotal + Object.values(serviceLines).reduce((sum, value) => sum + value, 0);
             lines.push(`Общая стоимость проекта: ${total.toFixed(2)} €`);
 
             return lines.join('\n').trim();
@@ -1345,6 +1422,15 @@
             const lengthInput = getField(cardElement, 'length');
             const materialLengthInput = getField(cardElement, 'materialLength');
             const materialWidthInput = getField(cardElement, 'materialWidth');
+            const manualMaterialInput = getField(cardElement, 'manualMaterial');
+            const manualCostInput = getField(cardElement, 'manualMaterialCost');
+            [manualMaterialInput, manualCostInput].forEach(input => input.addEventListener('input', () => {
+                const card = getCardById(cardId);
+                if (card) { card.manualMaterial = manualMaterialInput.checked; card.manualMaterialCost = manualCostInput.value; }
+                cardElement.querySelector('[data-fields="manualMaterial"]').classList.toggle('show', manualMaterialInput.checked);
+                saveState();
+            }));
+            manualMaterialInput.addEventListener('change', () => { const card=getCardById(cardId); if(card) card.manualMaterial=manualMaterialInput.checked; cardElement.querySelector('[data-fields="manualMaterial"]').classList.toggle('show', manualMaterialInput.checked); saveState(); });
 
             function commitTitle() {
                 const card = getCardById(cardId);
@@ -1434,6 +1520,8 @@
             getField(cardElement, 'materialLength').value = cardData.materialLength;
             getField(cardElement, 'materialWidth').value = cardData.materialWidth;
             getField(cardElement, 'quantity').value = cardData.quantity;
+            getField(cardElement, 'manualMaterial').checked = Boolean(cardData.manualMaterial);
+            getField(cardElement, 'manualMaterialCost').value = cardData.manualMaterialCost || '0';
 
             populateMaterialOptions(getField(cardElement, 'material'), cardData.material);
             updateTariffs(cardElement);
@@ -1442,6 +1530,7 @@
             }
 
             attachCardEvents(cardElement);
+            cardElement.querySelector('[data-fields="manualMaterial"]').classList.toggle('show', Boolean(cardData.manualMaterial));
 
             if (cardsState.length === 1) {
                 cardElement.querySelector('.remove-btn').disabled = true;
@@ -1465,11 +1554,67 @@
             });
 
             document.getElementById('addCardButton').disabled = cardsState.length >= MAX_CARDS;
+            document.querySelectorAll('.complex-only').forEach(node => node.style.display = calculatorMode === 'complex' ? '' : 'none');
+            document.getElementById('complexPanel').classList.toggle('show', calculatorMode === 'complex');
+            document.getElementById('modeTitle').textContent = calculatorMode === 'complex' ? 'Комплексный проект' : 'Лазерная резка';
+            refreshServiceUI();
             updateOverallSummary();
         }
 
         function getCardTitle(card, index) {
             return card.title && card.title.trim() ? card.title.trim() : `Материал #${index + 1}`;
+        }
+
+        function serviceLineItems(area) {
+            const n = key => Math.max(0, parseFloat(serviceState[key]) || 0);
+            const lines = {};
+            if (serviceState.tape) lines['Скотч 3M'] = area / 2 * 14.5;
+            if (serviceState.sanding) lines['Шлифовка'] = area * 5;
+            if (serviceState.gluing) lines['Склейка'] = n('glueSmall') * .25 + n('glueLarge');
+            if (serviceState.painting) lines['Покраска'] = n('colors') * 10 + area / 2 * 6;
+            if (serviceState.oil) lines['Покрытие маслом'] = n('oilSmall') * .1 + n('oilLarge');
+            if (serviceState.legs) lines['Установка ножек'] = n('legsCount') * .1;
+            if (serviceState.layout) lines['Макетирование'] = 10;
+            if (serviceState.expenses) (serviceState.expensesList || []).forEach((item, index) => {
+                const label = item.name.trim() || `Дополнительный расход ${index + 1}`;
+                lines[label] = (lines[label] || 0) + Math.max(0, parseFloat(item.cost) || 0);
+            });
+            return lines;
+        }
+        function calculateServices(area) { return Object.values(serviceLineItems(area)).reduce((sum, value) => sum + value, 0); }
+        function refreshServiceUI() {
+            document.querySelectorAll('[data-service]').forEach(input => {
+                input.checked = Boolean(serviceState[input.dataset.service]);
+                const fields = document.querySelector(`[data-fields="${input.dataset.service}"]`);
+                if (fields) fields.classList.toggle('show', input.checked);
+            });
+            document.querySelectorAll('[data-value]').forEach(input => { input.value = serviceState[input.dataset.value] ?? '0'; });
+            const expenseRows = document.getElementById('expenseRows');
+            if (expenseRows) {
+                expenseRows.innerHTML = '';
+                (serviceState.expensesList || []).forEach((item, index) => {
+                    const row = document.createElement('div'); row.className = 'expense-row';
+                    const name = document.createElement('input'); name.type='text'; name.placeholder='Название расхода'; name.value=item.name;
+                    const cost = document.createElement('input'); cost.type='number'; cost.min='0'; cost.step='0.01'; cost.placeholder='€'; cost.value=item.cost;
+                    const remove = document.createElement('button'); remove.type='button'; remove.className='secondary-btn'; remove.textContent='✕'; remove.title='Удалить расход';
+                    name.addEventListener('input', () => { item.name=name.value; updateOverallSummary(); saveState(); });
+                    cost.addEventListener('input', () => { item.cost=cost.value; updateOverallSummary(); saveState(); });
+                    remove.addEventListener('click', () => { serviceState.expensesList.splice(index,1); if (!serviceState.expensesList.length) serviceState.expensesList.push({name:'',cost:'0'}); refreshServiceUI(); updateOverallSummary(); saveState(); });
+                    row.append(name,cost,remove); expenseRows.appendChild(row);
+                });
+            }
+            const area = cardsState.reduce((sum, card) => sum + (card.result?.areaTotal || 0), 0);
+            document.querySelector('[data-cost="tape"]').textContent=(area / 2 * 14.5).toFixed(2);
+            document.querySelector('[data-cost="sanding"]').textContent=(area * 5).toFixed(2);
+            document.querySelector('[data-cost="paintArea"]').textContent=(area / 2 * 6).toFixed(2);
+        }
+        function setCalculatorMode(mode) {
+            calculatorMode = mode;
+            document.getElementById('modeTitle').textContent = mode === 'complex' ? 'Комплексный проект' : 'Лазерная резка';
+            document.getElementById('complexPanel').classList.toggle('show', mode === 'complex');
+            document.querySelectorAll('.complex-only').forEach(node => node.style.display = mode === 'complex' ? '' : 'none');
+            document.querySelectorAll('.mode-option').forEach(button => button.setAttribute('aria-checked', String(button.dataset.mode === mode)));
+            refreshServiceUI(); updateOverallSummary(); saveState();
         }
 
         function addCard(prefill = null) {
@@ -1526,8 +1671,11 @@
 
         function resetAll() {
             cardsState = [defaultCardData()];
+            calculatorMode = 'standard';
+            Object.assign(serviceState, { tape:false, sanding:false, gluing:false, painting:false, oil:false, legs:false, layout:false, expenses:false, glueSmall:'0', glueLarge:'0', colors:'0', oilSmall:'0', oilLarge:'0', legsCount:'0', expensesList:[{name:'',cost:'0'}] });
             localStorage.removeItem(STORAGE_KEY);
             renderCards();
+            setCalculatorMode('standard');
             saveState();
         }
 
@@ -1540,6 +1688,27 @@
         });
 
         document.getElementById('addCardButton').addEventListener('click', () => addCard());
+        document.getElementById('modeTrigger').addEventListener('click', () => {
+            const menu = document.getElementById('modeMenu');
+            const open = menu.classList.toggle('open');
+            document.getElementById('modeTrigger').setAttribute('aria-expanded', String(open));
+        });
+        document.querySelectorAll('.mode-option').forEach(button => button.addEventListener('click', () => {
+            setCalculatorMode(button.dataset.mode);
+            document.getElementById('modeMenu').classList.remove('open');
+            document.getElementById('modeTrigger').setAttribute('aria-expanded', 'false');
+        }));
+        document.getElementById('complexPanel').addEventListener('change', event => {
+            if (event.target.matches('[data-service]')) serviceState[event.target.dataset.service] = event.target.checked;
+            if (event.target.matches('[data-value]')) serviceState[event.target.dataset.value] = event.target.value;
+            refreshServiceUI(); updateOverallSummary(); saveState();
+        });
+        document.getElementById('complexPanel').addEventListener('input', event => {
+            if (event.target.matches('[data-value]')) { serviceState[event.target.dataset.value] = event.target.value; updateOverallSummary(); saveState(); }
+        });
+        document.getElementById('addExpenseButton').addEventListener('click', () => {
+            serviceState.expensesList.push({name:'', cost:'0'}); refreshServiceUI(); saveState();
+        });
         document.getElementById('saveProjectButton').addEventListener('click', copyProjectSummary);
         document.getElementById('importProjectButton').addEventListener('click', importProjectFromTextarea);
         document.getElementById('pasteClipboardButton').addEventListener('click', pasteProjectFromClipboard);
@@ -1549,6 +1718,7 @@
             loadState();
             await loadMaterialsFromSheet();
             renderCards();
+            setCalculatorMode(calculatorMode);
         });
     </script>
 </body>
