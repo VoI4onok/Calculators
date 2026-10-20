@@ -500,7 +500,7 @@
             </div>
             <div class="service-row">
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="tape">Скотч 3M</label><div class="inline-note">Половина площади × 14,50 €/м² · <span data-cost="tape">0.00</span> €</div></div>
-                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="tapeGluing">Склейка скотчем</label><div class="service-fields" data-fields="tapeGluing"><div class="input-row"><div class="input-group"><label>Мелкие элементы</label><input type="number" min="0" data-value="tapeGlueSmall" value="0"></div><div class="input-group"><label>Большие элементы</label><input type="number" min="0" data-value="tapeGlueLarge" value="0"></div></div><div class="inline-note">Мелкие: 0,10 € · большие: 1,00 €</div></div></div>
+                <div class="service-card"><label class="check-label"><input type="checkbox" data-service="tapeGluing">Склейка скотчем</label><div class="service-fields" data-fields="tapeGluing"><div class="input-row"><div class="input-group"><label>Мелкие элементы</label><input type="number" min="0" data-value="tapeGlueSmall" value="0"></div><div class="input-group"><label>Большие элементы</label><input type="number" min="0" data-value="tapeGlueLarge" value="0"></div></div><div class="inline-note">Мелкие: 0,25 € · большие: 1,00 €</div></div></div>
                 <div class="service-card"><label class="check-label"><input type="checkbox" data-service="painting">Покраска</label><div class="service-fields" data-fields="painting"><div class="input-group"><label>Количество цветов</label><input type="number" min="0" data-value="colors" value="0"></div><div class="inline-note">За площадь (½ площади × 6 €): <span data-cost="paintArea">0.00</span> €</div></div></div>
             </div>
             <div class="service-row">
@@ -544,10 +544,10 @@
             <br>Общая сумма блока: итог за 1 изделие × количество.
             <br>Ручной материал (комплексный проект): введённая общая стоимость / количество изделий; вместо цены из таблицы.
             <br>Постобработка: скотч 3M = ½ общей площади × 14,50 €/м²; шлифовка = общая площадь × 5 €/м²; трафарет = (½ общей площади × цена берёзы 6 мм из таблицы) + 5 € за резку.
-            <br>Склейка клеем: мелкие × 0,25 € + большие × 1,00 €; склейка скотчем: мелкие × 0,10 € + большие × 1,00 €; масло: мелкие × 0,10 € + большие × 1,00 €.
+            <br>Склейка клеем и скотчем: мелкие × 0,25 € + большие × 1,00 €; масло: мелкие × 0,10 € + большие × 1,00 €.
             <br>Покраска = цвета × 10 € + ½ общей площади × 6 €; ножки = количество × 0,30 € (0,20 € изготовление + 0,10 € установка); транспортировка = введённая стоимость доставки.
             <br>Доп. услуги: макетирование = 10 €; дополнительные расходы = сумма введённых стоимостей.
-            <br>Оплата сотруднику: сумма включённых чекбоксами работ (шлифовка, виды склейки, площадь покраски без платы за цвета, масло, установка ножек по 0,10 €, макетирование, резка трафарета 5 €).
+            <br>Оплата сотруднику: сумма включённых чекбоксами работ плюс 30% стоимости лазерной резки без материала. Склейка скотчем: мелкие × 0,25 € + большие × 1,00 €; резка станком считается отдельно от материала.
             <br>Общая стоимость проекта: сумма рассчитанных блоков + выбранные постобработки и доп. услуги.
         </div>
 
@@ -687,7 +687,7 @@
         let calculatorMode = 'standard';
         const serviceDefaults = { tape:false, sanding:false, gluing:false, tapeGluing:false, painting:false, oil:false, legs:false, stencil:false, transport:false, transportCost:'5', layout:false, expenses:false, glueSmall:'0', glueLarge:'0', tapeGlueSmall:'0', tapeGlueLarge:'0', colors:'0', oilSmall:'0', oilLarge:'0', legsCount:'0', expensesList:[{name:'',cost:'0'}] };
         const serviceState = { ...serviceDefaults };
-        const employeeTaskDefaults = { sanding:true, gluing:true, tapeGluing:true, painting:true, oil:true, legs:true, layout:true, stencil:true };
+        const employeeTaskDefaults = { machineCutting:true, sanding:true, gluing:true, tapeGluing:true, painting:true, oil:true, legs:true, layout:true, stencil:true };
         let employeeTaskState = { ...employeeTaskDefaults };
 
         function normalizeMaterialName(value) {
@@ -1235,7 +1235,8 @@
             }
             const employeePanel = document.getElementById('employeePayPanel');
             employeePanel.style.display = calculatorMode === 'complex' ? 'block' : 'none';
-            const employeeLines = calculatorMode === 'complex' ? employeePayLineItems(projectArea) : {};
+            const cuttingTotal = calculatedCards.reduce((sum, card) => sum + card.result.cuttingTotal, 0);
+            const employeeLines = calculatorMode === 'complex' ? employeePayLineItems(projectArea, cuttingTotal) : {};
             const employeeList = document.getElementById('employeePayList');
             employeeList.innerHTML = '';
             let employeeTotal = 0;
@@ -1308,7 +1309,8 @@
             const total = baseTotal + Object.values(serviceLines).reduce((sum, value) => sum + value, 0);
             lines.push(`Общая стоимость проекта: ${total.toFixed(2)} €`);
             if (calculatorMode === 'complex') {
-                const payrollItems = employeePayLineItems(projectArea);
+                const cuttingTotal = cardsState.reduce((sum, card) => sum + (card.result ? card.result.cuttingTotal : 0), 0);
+                const payrollItems = employeePayLineItems(projectArea, cuttingTotal);
                 const payroll = Object.entries(payrollItems).reduce((sum, [key, item]) => sum + (employeeTaskState[key] !== false ? item.amount : 0), 0);
                 lines.push(`Оплата работы сотруднику: ${payroll.toFixed(2)} €`);
                 lines.push(`Работы сотрудника: ${Object.entries(payrollItems).map(([key, item]) => `${item.label} — ${employeeTaskState[key] !== false ? 'включено' : 'исключено'}`).join('; ')}`);
@@ -1660,7 +1662,7 @@
             if (serviceState.tape) lines['Скотч 3M'] = area / 2 * 14.5;
             if (serviceState.sanding) lines['Шлифовка'] = area * 5;
             if (serviceState.gluing) lines['Склейка клеем'] = n('glueSmall') * .25 + n('glueLarge');
-            if (serviceState.tapeGluing) lines['Склейка скотчем'] = n('tapeGlueSmall') * .1 + n('tapeGlueLarge');
+            if (serviceState.tapeGluing) lines['Склейка скотчем'] = n('tapeGlueSmall') * .25 + n('tapeGlueLarge');
             if (serviceState.painting) lines['Покраска'] = n('colors') * 10 + area / 2 * 6;
             if (serviceState.oil) lines['Покрытие маслом'] = n('oilSmall') * .1 + n('oilLarge');
             if (serviceState.legs) lines['Ножки'] = n('legsCount') * .3;
@@ -1681,12 +1683,13 @@
             return material && typeof material.pricePerSqm === 'number' ? material.pricePerSqm : 0;
         }
         function calculateServices(area) { return Object.values(serviceLineItems(area)).reduce((sum, value) => sum + value, 0); }
-        function employeePayLineItems(area) {
+        function employeePayLineItems(area, cuttingTotal = 0) {
             const n = key => Math.max(0, parseFloat(serviceState[key]) || 0);
             return {
+                machineCutting: { label:'Резка на станке (30%)', amount:Math.max(0, cuttingTotal) * .3 },
                 sanding: { label:'Шлифовка', amount:serviceState.sanding ? area * 5 : 0 },
                 gluing: { label:'Склейка клеем', amount:serviceState.gluing ? n('glueSmall') * .25 + n('glueLarge') : 0 },
-                tapeGluing: { label:'Склейка скотчем', amount:serviceState.tapeGluing ? n('tapeGlueSmall') * .1 + n('tapeGlueLarge') : 0 },
+                tapeGluing: { label:'Склейка скотчем', amount:serviceState.tapeGluing ? n('tapeGlueSmall') * .25 + n('tapeGlueLarge') : 0 },
                 painting: { label:'Покраска — работа (без оплаты за цвета)', amount:serviceState.painting ? area / 2 * 6 : 0 },
                 oil: { label:'Покрытие маслом', amount:serviceState.oil ? n('oilSmall') * .1 + n('oilLarge') : 0 },
                 legs: { label:'Установка ножек', amount:serviceState.legs ? n('legsCount') * .1 : 0 },
