@@ -1279,6 +1279,18 @@
             Object.entries(serviceLines).forEach(([label, value]) => lines.push(`${label}: ${value.toFixed(2)} €`));
             const total = baseTotal + Object.values(serviceLines).reduce((sum, value) => sum + value, 0);
             lines.push(`Общая стоимость проекта: ${total.toFixed(2)} €`);
+            const snapshot = {
+                version: 1,
+                calculatorMode,
+                serviceState,
+                cards: cardsState.map(card => ({
+                    title: card.title, length: card.length, engraveTime: card.engraveTime,
+                    materialLength: card.materialLength, materialWidth: card.materialWidth,
+                    quantity: card.quantity, material: card.material, tariff: card.tariff,
+                    manualMaterial: Boolean(card.manualMaterial), manualMaterialCost: card.manualMaterialCost || '0'
+                }))
+            };
+            lines.push(`КАЛЬКУЛЯТОР_STATE_V1:${JSON.stringify(snapshot)}`);
 
             return lines.join('\n').trim();
         }
@@ -1309,7 +1321,13 @@
                 throw new Error('Нет текста для загрузки');
             }
 
-            const lines = normalizedText.split('\n').map(line => line.trim());
+            const snapshotLine = normalizedText.split('\n').find(line => line.trim().startsWith('КАЛЬКУЛЯТОР_STATE_V1:'));
+            let snapshot = null;
+            if (snapshotLine) {
+                try { snapshot = JSON.parse(snapshotLine.trim().slice('КАЛЬКУЛЯТОР_STATE_V1:'.length)); }
+                catch (error) { throw new Error('Не удалось прочитать сохранённые настройки проекта'); }
+            }
+            const lines = normalizedText.split('\n').map(line => line.trim()).filter(line => !line.startsWith('КАЛЬКУЛЯТОР_STATE_V1:'));
             const blocks = [];
             let currentBlock = null;
 
@@ -1362,17 +1380,20 @@
                 blocks.push(currentBlock);
             }
 
-            return blocks
+            const parsedBlocks = blocks
                 .slice(0, MAX_CARDS)
                 .filter(block => block.title || block.materialName || block.length || block.quantity);
+            return { blocks: parsedBlocks, snapshot };
         }
 
-        function applyImportedBlocks(blocks) {
+        function applyImportedProject(imported) {
+            const blocks = imported.blocks;
             if (!blocks.length) {
                 throw new Error('Не удалось распознать блоки в тексте');
             }
 
-            cardsState = blocks.map(block => {
+            const savedCards = Array.isArray(imported.snapshot?.cards) ? imported.snapshot.cards : [];
+            cardsState = blocks.map((block, index) => {
                 const card = defaultCardData();
                 card.title = block.title || '';
                 card.length = block.length || '0';
@@ -1382,9 +1403,23 @@
                 card.quantity = block.quantity || '1';
                 card.material = findMaterialKeyByName(block.materialName);
                 card.tariff = card.material ? findTariffIndexByLabel(card.material, block.tariffLabel) : '';
+                Object.assign(card, savedCards[index] || {});
+                card.id = card.id || nextCardId++;
                 card.result = null;
                 return card;
             });
+
+            if (imported.snapshot) {
+                calculatorMode = imported.snapshot.calculatorMode === 'complex' ? 'complex' : 'standard';
+                Object.assign(serviceState, serviceDefaults, imported.snapshot.serviceState || {});
+                serviceState.expensesList = Array.isArray(imported.snapshot.serviceState?.expensesList)
+                    ? imported.snapshot.serviceState.expensesList.map(item => ({ name: String(item.name || ''), cost: String(item.cost ?? '0') }))
+                    : [{name:'', cost:'0'}];
+            } else {
+                calculatorMode = 'standard';
+                Object.assign(serviceState, serviceDefaults);
+                serviceState.expensesList = [{name:'', cost:'0'}];
+            }
 
             renderCards();
 
@@ -1398,9 +1433,10 @@
         async function importProjectFromTextarea() {
             const textarea = document.getElementById('importTextarea');
             try {
-                const blocks = parseProjectSummaryText(textarea.value);
-                applyImportedBlocks(blocks);
-                setActionStatus(`Проект загружен. Блоков: ${blocks.length}`);
+                const imported = parseProjectSummaryText(textarea.value);
+                applyImportedProject(imported);
+                setCalculatorMode(calculatorMode);
+                setActionStatus(`Проект загружен. Блоков: ${imported.blocks.length}`);
             } catch (error) {
                 setActionStatus(error.message || 'Не удалось загрузить проект', true);
             }
