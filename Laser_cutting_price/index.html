@@ -1665,7 +1665,7 @@
             if (serviceState.tapeGluing) lines['Склейка скотчем'] = n('tapeGlueSmall') * .25 + n('tapeGlueLarge');
             if (serviceState.painting) lines['Покраска'] = n('colors') * 10 + area / 2 * 6;
             if (serviceState.oil) lines['Покрытие маслом'] = n('oilSmall') * .1 + n('oilLarge');
-            if (serviceState.legs) lines['Ножки'] = n('legsCount') * .3;
+            if (serviceState.legs) lines['Ножки'] = n('legsCount') * .5;
             if (serviceState.stencil) lines['Трафарет'] = area / 2 * birchPrice + 5;
             if (serviceState.transport) lines['Транспортировка'] = n('transportCost');
             if (serviceState.layout) lines['Макетирование'] = 10;
@@ -1678,7 +1678,8 @@
         function birch6Price() {
             const material = Object.values(materialsData).find(item => {
                 const name = normalizeMaterialName(item.name);
-                return name.includes('берез') && name.includes('6');
+                const isSixMillimeters = /(?:^|[^0-9])6(?:[.,]0)?\s*(?:мм|mm)(?:$|[^a-zа-я])/i.test(name);
+                return name.includes('берез') && isSixMillimeters;
             });
             return material && typeof material.pricePerSqm === 'number' ? material.pricePerSqm : 0;
         }
