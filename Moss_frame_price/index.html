@@ -193,15 +193,79 @@
             margin-top: 5px;
         }
 
-        .custom-rack-fields {
-            display: none;
-            margin-top: 12px;
-            gap: 10px;
+        .field-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
         }
 
-        .custom-rack-fields.show {
+        .field-label label {
+            margin-bottom: 0;
+        }
+
+        .custom-price-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        .custom-price-field {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .custom-price-field.show {
+            display: block;
+        }
+
+        .expense-list {
             display: grid;
-            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .expense-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+            gap: 8px;
+        }
+
+        .add-expense-btn,
+        .remove-expense-btn {
+            flex: none;
+            font-size: 14px;
+        }
+
+        .add-expense-btn {
+            width: 100%;
+            background: #e8f4f8;
+            color: #0f778a;
+        }
+
+        .remove-expense-btn {
+            padding: 0 12px;
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        @media (max-width: 480px) {
+            .field-label {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .expense-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .remove-expense-btn {
+                grid-column: 1 / -1;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -220,25 +284,39 @@
         </div>
 
         <div class="input-group">
-            <label for="backMaterial">Материал задней стенки:</label>
+            <div class="field-label">
+                <label for="backMaterial">Материал задней стенки:</label>
+                <label class="custom-price-toggle"><input type="checkbox" id="useCustomBackPrice"> Своя цена</label>
+            </div>
             <select id="backMaterial">
                 <option value="2.3">Прескартон - 2,35 €/м²</option>
                 <option value="9.4">HDF 6 мм - 9,4 €/м²</option>
                 <option value="10.9">Фанера берёзовая 4 мм - 10,9 €/м²</option>
                 <option value="5">Фальката 3 мм - 5 €/м²</option>
             </select>
+            <div id="customBackPriceField" class="custom-price-field">
+                <input type="text" id="customBackPrice" inputmode="decimal" pattern="[0-9]*[\.,]?[0-9]*" placeholder="Цена за м², например: 3,50">
+            </div>
         </div>
 
         <div class="input-group">
-            <label for="rackMaterial">Материал рейки:</label>
+            <div class="field-label">
+                <label for="rackMaterial">Материал рейки:</label>
+                <label class="custom-price-toggle"><input type="checkbox" id="useCustomRackPrice"> Своя цена</label>
+            </div>
             <select id="rackMaterial">
                 <option value="2">Рейка 23 × 45 мм - 2 €/м</option>
                 <option value="0.86">Рейка 15 × 30 мм - 0,86 €/м</option>
-                <option value="custom">Своя рейка</option>
             </select>
-            <div id="customRackFields" class="custom-rack-fields">
+            <div id="customRackPriceField" class="custom-price-field">
                 <input type="text" id="customRackPrice" inputmode="decimal" pattern="[0-9]*[\.,]?[0-9]*" placeholder="Цена за метр, например: 1,25">
             </div>
+        </div>
+
+        <div class="input-group">
+            <label>Дополнительные расходы:</label>
+            <div id="additionalExpenses" class="expense-list"></div>
+            <button id="btnAddExpense" class="add-expense-btn" type="button">+ Добавить расход</button>
         </div>
 
         <div class="input-group" style="display:flex; gap:10px; margin-top:10px;">
@@ -262,6 +340,10 @@
             <div class="result-row">
                 <strong>Электричество:</strong>
                 <span><span id="electricity">0.00</span> €</span>
+            </div>
+            <div class="result-row">
+                <strong>Дополнительные расходы:</strong>
+                <span><span id="additionalExpensesTotal">0.00</span> €</span>
             </div>
             <div class="result-row">
                 <strong>Себестоимость:</strong>
@@ -334,26 +416,69 @@
             </div>
 
             <div class="calc-step">
-                <div><strong>8. Стоимость:</strong></div>
-                <div class="calc-formula">Стоимость = (Себестоимость × 2) + (Себестоимость × 0.3)</div>
-                <div class="calc-formula">= (<span id="calcCostCalc2">0.00</span> × 2) + (<span id="calcCostCalc3">0.00</span> × 0.3)</div>
-                <div class="calc-formula">= <span id="calcPart1">0.00</span> + <span id="calcPart2">0.00</span></div>
+                <div><strong>8. Дополнительные расходы:</strong></div>
+                <div class="calc-formula">Дополнительные расходы добавляются к стоимости без наценки</div>
+                <div class="calc-result">= <span id="calcAdditionalExpenses">0.00</span> €</div>
+            </div>
+
+            <div class="calc-step">
+                <div><strong>9. Стоимость:</strong></div>
+                <div id="calcPriceRule" class="calc-formula">Коэффициент стоимости = 2,3</div>
+                <div class="calc-formula">Стоимость = (Себестоимость × коэффициент) + Дополнительные расходы</div>
+                <div class="calc-formula">= (<span id="calcCostCalc2">0.00</span> × <span id="calcMultiplier">2.30</span>) + <span id="calcAdditionalExpenses2">0.00</span></div>
                 <div class="calc-result">= <span id="calcProfitCalc">0.00</span> €</div>
             </div>
         </div>
     </div>
 
     <script>
-        const inputs = ['width', 'height', 'backMaterial', 'rackMaterial', 'customRackPrice'];
+        let additionalExpenses = [];
+
+        const inputs = ['width', 'height', 'backMaterial', 'rackMaterial', 'customBackPrice', 'customRackPrice'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('change', saveToLocalStorage);
         });
 
-        document.getElementById('rackMaterial').addEventListener('change', () => {
-            toggleCustomRackFields();
+        ['backMaterial', 'rackMaterial'].forEach(id => {
+            document.getElementById(id).addEventListener('change', calculate);
+        });
+
+        document.getElementById('useCustomBackPrice').addEventListener('change', () => {
+            toggleCustomPriceFields();
+            saveToLocalStorage();
+            calculate();
+        });
+        document.getElementById('useCustomRackPrice').addEventListener('change', () => {
+            toggleCustomPriceFields();
+            saveToLocalStorage();
+            calculate();
+        });
+        document.getElementById('customBackPrice').addEventListener('input', () => {
+            saveToLocalStorage();
             calculate();
         });
         document.getElementById('customRackPrice').addEventListener('input', () => {
+            saveToLocalStorage();
+            calculate();
+        });
+        document.getElementById('btnAddExpense').addEventListener('click', () => {
+            additionalExpenses.push({ name: '', price: '' });
+            renderAdditionalExpenses();
+            saveToLocalStorage();
+        });
+        document.getElementById('additionalExpenses').addEventListener('input', (event) => {
+            const row = event.target.closest('.expense-row');
+            if (!row) return;
+            const index = Number(row.dataset.index);
+            additionalExpenses[index][event.target.dataset.field] = event.target.value;
+            saveToLocalStorage();
+            calculate();
+        });
+        document.getElementById('additionalExpenses').addEventListener('click', (event) => {
+            const button = event.target.closest('.remove-expense-btn');
+            if (!button) return;
+            additionalExpenses.splice(Number(button.closest('.expense-row').dataset.index), 1);
+            renderAdditionalExpenses();
             saveToLocalStorage();
             calculate();
         });
@@ -435,13 +560,22 @@
             document.getElementById('height').value = '';
             document.getElementById('backMaterial').selectedIndex = 0;
             document.getElementById('rackMaterial').selectedIndex = 0;
+            document.getElementById('useCustomBackPrice').checked = false;
+            document.getElementById('customBackPrice').value = '';
+            document.getElementById('useCustomRackPrice').checked = false;
             document.getElementById('customRackPrice').value = '';
+            additionalExpenses = [];
             storageRemove('frameWidth');
             storageRemove('frameHeight');
             storageRemove('backMaterial');
             storageRemove('rackMaterial');
+            storageRemove('useCustomBackPrice');
+            storageRemove('customBackPrice');
+            storageRemove('useCustomRackPrice');
             storageRemove('customRackPrice');
-            toggleCustomRackFields();
+            storageRemove('additionalExpenses');
+            toggleCustomPriceFields();
+            renderAdditionalExpenses();
             calculate();
         }
 
@@ -475,17 +609,67 @@
             if (_storageFallback.hasOwnProperty(key)) delete _storageFallback[key];
         }
 
-        function toggleCustomRackFields() {
-            const isCustomRack = document.getElementById('rackMaterial').value === 'custom';
-            document.getElementById('customRackFields').classList.toggle('show', isCustomRack);
+        function toggleCustomPriceFields() {
+            document.getElementById('customBackPriceField').classList.toggle(
+                'show',
+                document.getElementById('useCustomBackPrice').checked
+            );
+            document.getElementById('customRackPriceField').classList.toggle(
+                'show',
+                document.getElementById('useCustomRackPrice').checked
+            );
+        }
+
+        function renderAdditionalExpenses() {
+            const list = document.getElementById('additionalExpenses');
+            list.replaceChildren();
+
+            additionalExpenses.forEach((expense, index) => {
+                const row = document.createElement('div');
+                row.className = 'expense-row';
+                row.dataset.index = index;
+
+                const name = document.createElement('input');
+                name.type = 'text';
+                name.placeholder = 'Например: доставка';
+                name.value = expense.name || '';
+                name.dataset.field = 'name';
+
+                const price = document.createElement('input');
+                price.type = 'text';
+                price.inputMode = 'decimal';
+                price.placeholder = 'Сумма, например: 12,50';
+                price.value = expense.price || '';
+                price.dataset.field = 'price';
+
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'remove-expense-btn';
+                remove.textContent = 'Удалить';
+
+                row.append(name, price, remove);
+                list.appendChild(row);
+            });
         }
 
         function getRackPrice() {
-            const rackMaterial = document.getElementById('rackMaterial').value;
-            if (rackMaterial === 'custom') {
+            if (document.getElementById('useCustomRackPrice').checked) {
                 return Math.max(0, parseNumber(document.getElementById('customRackPrice').value));
             }
-            return Math.max(0, parseNumber(rackMaterial));
+            return Math.max(0, parseNumber(document.getElementById('rackMaterial').value));
+        }
+
+        function getBackMaterialPrice() {
+            if (document.getElementById('useCustomBackPrice').checked) {
+                return Math.max(0, parseNumber(document.getElementById('customBackPrice').value));
+            }
+            return Math.max(0, parseNumber(document.getElementById('backMaterial').value));
+        }
+
+        function getAdditionalExpensesTotal() {
+            return additionalExpenses.reduce((total, expense) => {
+                return total + Math.max(0, parseNumber(expense.price));
+            }, 0);
         }
 
         // Загрузка сохраненных данных при загрузке страницы (использует безопасный getter)
@@ -494,15 +678,29 @@
             const savedHeight = storageGet('frameHeight');
             const savedMaterial = storageGet('backMaterial');
             const savedRackMaterial = storageGet('rackMaterial');
+            const savedUseCustomBackPrice = storageGet('useCustomBackPrice');
+            const savedCustomBackPrice = storageGet('customBackPrice');
+            const savedUseCustomRackPrice = storageGet('useCustomRackPrice');
             const savedCustomRackPrice = storageGet('customRackPrice');
+            const savedAdditionalExpenses = storageGet('additionalExpenses');
 
             if (savedWidth) document.getElementById('width').value = savedWidth;
             if (savedHeight) document.getElementById('height').value = savedHeight;
             if (savedMaterial) document.getElementById('backMaterial').value = savedMaterial;
-            if (savedRackMaterial) document.getElementById('rackMaterial').value = savedRackMaterial;
+            if (savedRackMaterial && savedRackMaterial !== 'custom') document.getElementById('rackMaterial').value = savedRackMaterial;
+            if (savedUseCustomBackPrice === 'true') document.getElementById('useCustomBackPrice').checked = true;
+            if (savedCustomBackPrice) document.getElementById('customBackPrice').value = savedCustomBackPrice;
+            if (savedUseCustomRackPrice === 'true' || savedRackMaterial === 'custom') document.getElementById('useCustomRackPrice').checked = true;
             if (savedCustomRackPrice) document.getElementById('customRackPrice').value = savedCustomRackPrice;
+            try {
+                const savedExpenses = JSON.parse(savedAdditionalExpenses || '[]');
+                if (Array.isArray(savedExpenses)) {
+                    additionalExpenses = savedExpenses.filter(expense => expense && typeof expense === 'object');
+                }
+            } catch (e) {}
 
-            toggleCustomRackFields();
+            toggleCustomPriceFields();
+            renderAdditionalExpenses();
             calculate();
         }
 
@@ -512,13 +710,17 @@
             storageSet('frameHeight', document.getElementById('height').value);
             storageSet('backMaterial', document.getElementById('backMaterial').value);
             storageSet('rackMaterial', document.getElementById('rackMaterial').value);
+            storageSet('useCustomBackPrice', document.getElementById('useCustomBackPrice').checked);
+            storageSet('customBackPrice', document.getElementById('customBackPrice').value);
+            storageSet('useCustomRackPrice', document.getElementById('useCustomRackPrice').checked);
             storageSet('customRackPrice', document.getElementById('customRackPrice').value);
+            storageSet('additionalExpenses', JSON.stringify(additionalExpenses));
         }
 
         function calculate() {
             const width = parseNumber(document.getElementById('width').value);
             const height = parseNumber(document.getElementById('height').value);
-            const backMaterialPrice = parseNumber(document.getElementById('backMaterial').value);
+            const backMaterialPrice = getBackMaterialPrice();
             const rackPrice = getRackPrice();
 
             // Периметр рамки в метрах
@@ -532,24 +734,27 @@
             const materialBack = area * backMaterialPrice;  // цена материала за м²
             const labor = perimeter * 4;             // 4 € за метр работы
             const electricity = perimeter * 0.7;     // 0.7 € за метр электричества
+            const additionalExpensesTotal = getAdditionalExpensesTotal();
 
             // Себестоимость - сумма всех затрат
             const costPrice = materialRack + materialBack + labor + electricity;
+            const priceMultiplier = perimeter > 6 ? 3.3 : 2.3;
 
-            // Стоимость (финальная цена) по формуле: (себестоимость * 2) + (себестоимость * 0.3)
-            const finalPrice = (costPrice * 2) + (costPrice * 0.3);
+            // Дополнительные расходы добавляются к цене после применения коэффициента.
+            const finalPrice = (costPrice * priceMultiplier) + additionalExpensesTotal;
 
-            // Прибыль = Стоимость - Себестоимость
-            const profitAmount = finalPrice - costPrice;
+            // Прибыль не включает дополнительные расходы, которые компенсируют затраты.
+            const profitAmount = finalPrice - costPrice - additionalExpensesTotal;
 
-            // Оптовая цена за 1 шт. (10+ штук): себестоимость * 2
-            const wholesalePrice = costPrice * 2;
+            // Оптовая цена за 1 шт. (10+ штук): себестоимость * 2 + дополнительные расходы
+            const wholesalePrice = (costPrice * 2) + additionalExpensesTotal;
 
             // Вывод результатов в основной калькулятор
             document.getElementById('materialRack').textContent = materialRack.toFixed(2);
             document.getElementById('materialBack').textContent = materialBack.toFixed(2);
             document.getElementById('labor').textContent = labor.toFixed(2);
             document.getElementById('electricity').textContent = electricity.toFixed(2);
+            document.getElementById('additionalExpensesTotal').textContent = additionalExpensesTotal.toFixed(2);
             document.getElementById('costPrice').textContent = costPrice.toFixed(2);
             document.getElementById('profitAmount').textContent = profitAmount.toFixed(2);
             document.getElementById('profit').textContent = finalPrice.toFixed(2);
@@ -591,11 +796,16 @@
             document.getElementById('calcBackCalc2').textContent = materialBack.toFixed(2);
             document.getElementById('calcCostCalc').textContent = costPrice.toFixed(2);
 
-            // Шаг 8: Прибыль
+            // Шаг 8: Дополнительные расходы
+            document.getElementById('calcAdditionalExpenses').textContent = additionalExpensesTotal.toFixed(2);
+
+            // Шаг 9: Стоимость
             document.getElementById('calcCostCalc2').textContent = costPrice.toFixed(2);
-            document.getElementById('calcCostCalc3').textContent = costPrice.toFixed(2);
-            document.getElementById('calcPart1').textContent = (costPrice * 2).toFixed(2);
-            document.getElementById('calcPart2').textContent = (costPrice * 0.3).toFixed(2);
+            document.getElementById('calcMultiplier').textContent = priceMultiplier.toFixed(2);
+            document.getElementById('calcAdditionalExpenses2').textContent = additionalExpensesTotal.toFixed(2);
+            document.getElementById('calcPriceRule').textContent = perimeter > 6
+                ? 'Периметр больше 6 м, коэффициент стоимости = 3,3'
+                : 'Периметр не больше 6 м, коэффициент стоимости = 2,3';
             document.getElementById('calcProfitCalc').textContent = finalPrice.toFixed(2);
         }
 
